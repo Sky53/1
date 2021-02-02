@@ -60,7 +60,8 @@ namespace ChatClient
             var groupId = Console.ReadLine();
             Console.Write("Введите сообщение: ");
             var text = Console.ReadLine();
-            var message = new TextMessage { GroupId  = groupId.Equals("0") ?  null : new Group { Id = long.Parse(groupId) },
+            var grp = groupId.Equals("0") ? (long?)null : long.Parse(groupId);
+            var message = new TextMessage { GroupId  = grp,
                                             UserName = userName, 
                                             Body = text, 
                                             CreateDate = DateTime.Now  };
