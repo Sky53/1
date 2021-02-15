@@ -13,9 +13,15 @@ namespace DataAccessLayer.Repositories
         private ChatContext _chatContext { get; set; } = new ChatContext();
         public async Task<User> CreateUser(User user)
         {
-            await _chatContext.Users.AddAsync(user);
-            await _chatContext.SaveChangesAsync();
-
+            try
+            {
+                await _chatContext.Users.AddAsync(user);
+                await _chatContext.SaveChangesAsync();
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine(exc.Message);
+            }
             return user;
         }
 

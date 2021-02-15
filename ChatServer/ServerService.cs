@@ -65,14 +65,13 @@ namespace ChatServer
                                                     Pass = user.Pass });
 
             return res;
-
         }
 
-        internal bool AuthorizationUser(AuthorizationMessage msg, string sessionId)
+        internal async Task<bool> AuthorizationUser(AuthorizationMessage msg, string sessionId)
         {
-            var st = DALHelper.Authorization(msg);
-            var result = userService.Auth(msg);
-            return st == null ? false : true;
+            //var st = DALHelper.Authorization(msg);
+            var result = await userService.Auth(msg);
+            return result == null ? false : true;
         }
 
         protected internal void BroadcastMessage(string message, string id, Group groupq = null)

@@ -42,11 +42,11 @@ namespace ChatServer
                             AuthorizationMessage obj = MessageAuthParse(msg);
                             if (obj.IsReg == true)
                             {
-                               var user = await server.CreateUser(obj);
+                               var user =  server.CreateUser(obj);
                                var userJson =  JsonSerializer.Serialize(user);
                                server.SendResponsOnAuth(userJson, this.SessionId);
                             }
-                            var statusAuth = server.AuthorizationUser(obj, this.SessionId);
+                            var statusAuth = await server.AuthorizationUser(obj, this.SessionId);
                             if (statusAuth)
                             {
                                 userName = obj.UserName;//userdata
@@ -116,7 +116,7 @@ namespace ChatServer
             while (Stream.DataAvailable);
 
             var message = builder.ToString();
-            return builder.ToString();
+            return message;
         }
         protected internal void Close()
         {

@@ -35,8 +35,7 @@ namespace ChatClient
                 SendRegMessage(userName, password);
                 Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
                 receiveThread.Start();
-                Console.WriteLine("Добро пожаловать, {0}", userName);
-                SendMessage();
+                ReceiveMessage();
             }
             catch (Exception ex)
             {
@@ -49,27 +48,25 @@ namespace ChatClient
         }
         static void SendMessage()
         {
-            Console.WriteLine("Введите сообщение: ");
-
             while (true)
             {
-                string Message = MakeMessage();
-                byte[] data = Encoding.UTF8.GetBytes(Message);
-                stream.Write(data, 0, data.Length);
+                if (User != null)
+                {
+                    string Message = MakeMessage();
+                    byte[] data = Encoding.UTF8.GetBytes(Message);
+                    stream.Write(data, 0, data.Length);
+                }
             }
         }
 
         private static string MakeMessage()
         {
-            Console.Write(" Выберите номер группу: ");
-            Console.WriteLine(Groups.Select(s => s));
-            var groupId = Console.ReadLine();
+
             Console.Write("Введите сообщение: ");
             var text = Console.ReadLine();
-            var grp = groupId.Equals("0") ? (long?)null : long.Parse(groupId);
             var message = new TextMessage
             {
-                GroupId = grp,
+                GroupId = 0,
                 UserName = userName,
                 Body = text,
                 CreateDate = DateTime.Now,
@@ -100,7 +97,7 @@ namespace ChatClient
                     AnalysisMessage(message);
 
                 }
-                catch
+                catch(Exception e)
                 {
                     Console.WriteLine("Подключение прервано!");
                     Console.ReadLine();
@@ -113,6 +110,7 @@ namespace ChatClient
         {
             if (message.Equals("Хотите зарегистироваться y/n"))
             {
+                Console.WriteLine(message);
                 var answer = Console.ReadLine();
                 if (answer.Equals("n"))
                 {
@@ -122,22 +120,24 @@ namespace ChatClient
                 {
                     Console.Write("Введите свой пароль еще раз: ");
                     var password = Console.ReadLine();
-                    Console.Write("Введите Свою группу: ");
-                    var group = Console.ReadLine();
-                    SendRegMessage(userName, password, int.Parse(group));
+                    //Console.Write("Введите Свою группу: ");
+                    //var group = Console.ReadLine();
+                    SendRegMessage(userName, password, isReg: true);
                 }
                 if (message.Equals("Pass", StringComparison.OrdinalIgnoreCase))
                 {
                     var user = JsonSerializer.Deserialize<User>(message);
                     User = user;
+                    Console.WriteLine("Добро пожаловать, {0}", userName);//TODO hello
+                    SendMessage();
                 }
                 Console.WriteLine(message);
             }
         }
 
-        private static void SendRegMessage(string userName, string password, int group = 0)
+        private static void SendRegMessage(string userName, string password, bool isReg = false, int group = 0)
         {
-            var regOrAuthMessage = ClientHelper.GetRegOrAuthMessage(userName, password, true, group);
+            var regOrAuthMessage = ClientHelper.GetRegOrAuthMessage(userName, password, isReg, group);
             string json = JsonSerializer.Serialize(regOrAuthMessage);
             byte[] authData = Encoding.UTF8.GetBytes(json);
             stream.Write(authData, 0, authData.Length);
