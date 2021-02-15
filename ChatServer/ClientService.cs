@@ -27,7 +27,7 @@ namespace ChatServer
             serverObject.AddConnection(this);
         }
 
-        public void Process()
+        public async void Process()
         {
             try
             {
@@ -40,7 +40,12 @@ namespace ChatServer
                         if (msg.Contains("pass", StringComparison.InvariantCultureIgnoreCase))
                         {
                             AuthorizationMessage obj = MessageAuthParse(msg);
-
+                            if (obj.IsReg == true)
+                            {
+                               var user = await server.CreateUser(obj);
+                               var userJson =  JsonSerializer.Serialize(user);
+                               server.SendResponsOnAuth(userJson, this.SessionId);
+                            }
                             var statusAuth = server.AuthorizationUser(obj, this.SessionId);
                             if (statusAuth)
                             {
@@ -51,7 +56,7 @@ namespace ChatServer
                             }
                             else
                             {
-                                server.SendOffer(msg, this.SessionId);
+                                server.SendOffer(this.SessionId);
                             }
                         }
                         if (msg.Contains("body", StringComparison.InvariantCultureIgnoreCase))

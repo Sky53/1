@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer.Repositories
 {
-    public class GroupRepository : IGroupRepository
+    public class GroupRepository /*: IGroupRepository*/
     {
         private ChatContext _chatContext { get; set; } = new ChatContext();
         public async Task<long> CreateGroup(Group group)

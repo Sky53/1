@@ -1,5 +1,6 @@
 ﻿using DataAccessLayer.AbstractionServices;
 using DataAccessLayer.Model;
+using DataAccessLayer.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,9 +10,13 @@ namespace DataAccessLayer.Services
 {
     public class MessageService : IMessageService
     {
-        public Task Send(TextMessage textMessage)
+        public readonly MessageRepository messageRepository = new MessageRepository();
+        public async Task Send(TextMessage textMessage)
         {
-            throw new NotImplementedException();
+            if (textMessage == null)
+                throw new ArgumentException("Value can not be empty");
+
+             await messageRepository.CreateMessage(textMessage);
         }
     }
 }

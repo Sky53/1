@@ -9,7 +9,7 @@ namespace DataAccessLayer.Abstraction
     public interface IUserRepository
     {
         public Task<User> GetUserByNameAndPassword(AuthorizationMessage authorizationMessage);
-        public Task<long> CreateUser(User user);
+        public Task<User> CreateUser(User user);
         public Task UpdateUser(User user);
         public Task DeleteUser(User user);
     }

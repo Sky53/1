@@ -1,16 +1,20 @@
 ﻿using DataAccessLayer.AbstractionServices;
+using DataAccessLayer.Model;
+using DataAccessLayer.Repositories;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DataAccessLayer.Services
 {
     public class GroupService : IGroupService
     {
-        public Task GetGroups()
+        public readonly GroupRepository groupRepository = new GroupRepository();
+        public async Task<List<Group>> GetGroups()
         {
-            throw new NotImplementedException();
+            var result = await groupRepository.GetGroups();
+
+            return result;
         }
     }
 }

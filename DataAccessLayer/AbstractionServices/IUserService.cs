@@ -8,7 +8,7 @@ namespace DataAccessLayer.AbstractionServices
 {
     public interface IUserService
     {
-        public bool Auth(string name, string pass);
+        public Task<User> Auth(AuthorizationMessage message);
         public Task<User> Create(User user);
     }
 }

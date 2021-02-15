@@ -11,12 +11,12 @@ namespace DataAccessLayer.Repositories
     public class UserRepository : IUserRepository
     {
         private ChatContext _chatContext { get; set; } = new ChatContext();
-        public async Task<long> CreateUser(User user)
+        public async Task<User> CreateUser(User user)
         {
             await _chatContext.Users.AddAsync(user);
             await _chatContext.SaveChangesAsync();
 
-            return user.Id;
+            return user;
         }
 
         public async Task DeleteUser(User user)
@@ -28,7 +28,7 @@ namespace DataAccessLayer.Repositories
         public async Task<User> GetUserByNameAndPassword(AuthorizationMessage authorizationMessage)
         {
             var result = _chatContext.Users.Where(w => w.Name == authorizationMessage.UserName && w.Pass == authorizationMessage.Pass).FirstOrDefault();
-            
+
             return result;
         }
 

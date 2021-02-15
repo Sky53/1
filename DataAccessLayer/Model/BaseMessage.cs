@@ -18,5 +18,13 @@ namespace DataAccessLayer.Model
         public long? GroupId { get; set; }
         public Group? Group { get; set; }
         public List<User> Users { get; set; } = new List<User>();
+
+        public BaseMessage()
+        {
+        }
+        public BaseMessage(string name) 
+        {
+            UserName = name;
+        }
     }
 }

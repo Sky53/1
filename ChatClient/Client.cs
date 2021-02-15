@@ -1,5 +1,8 @@
 ﻿using DataAccessLayer.Model;
+using DataAccessLayer.Services;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -10,6 +13,8 @@ namespace ChatClient
     class Client
     {
         static string userName;
+        static User User;
+        static List<Group> Groups = new GroupService().GetGroups().GetAwaiter().GetResult();
         private const string host = "127.0.0.1";
         private const int port = 1313;
         static TcpClient client;
@@ -57,14 +62,19 @@ namespace ChatClient
         private static string MakeMessage()
         {
             Console.Write(" Выберите номер группу: ");
+            Console.WriteLine(Groups.Select(s => s));
             var groupId = Console.ReadLine();
             Console.Write("Введите сообщение: ");
             var text = Console.ReadLine();
             var grp = groupId.Equals("0") ? (long?)null : long.Parse(groupId);
-            var message = new TextMessage { GroupId  = grp,
-                                            UserName = userName, 
-                                            Body = text, 
-                                            CreateDate = DateTime.Now  };
+            var message = new TextMessage
+            {
+                GroupId = grp,
+                UserName = userName,
+                Body = text,
+                CreateDate = DateTime.Now,
+                SessionId = User.SessionId
+            };
             string json = JsonSerializer.Serialize(message);
 
             return json;
@@ -87,22 +97,8 @@ namespace ChatClient
                     while (stream.DataAvailable);
 
                     string message = builder.ToString();
-                    if (message.Equals("Хотите зарегистироваться y/n"))
-                    {
-                        var answer = Console.ReadLine();
-                        if (answer.Equals("n"))
-                        {
-                            Disconnect();
-                        }
-                        else
-                        {
-                            Console.Write("Введите свой пароль еще раз: ");
-                            var password = Console.ReadLine();
-                            SendRegMessage(userName, password);
-                           
-                        }
-                    }
-                    Console.WriteLine(message);
+                    AnalysisMessage(message);
+
                 }
                 catch
                 {
@@ -113,9 +109,35 @@ namespace ChatClient
             }
         }
 
-        private static void SendRegMessage(string userName, string password)
+        private static void AnalysisMessage(string message)
         {
-            var regOrAuthMessage = ClientHelper.GetRegOrAuthMessage(userName, password);
+            if (message.Equals("Хотите зарегистироваться y/n"))
+            {
+                var answer = Console.ReadLine();
+                if (answer.Equals("n"))
+                {
+                    Disconnect();
+                }
+                else
+                {
+                    Console.Write("Введите свой пароль еще раз: ");
+                    var password = Console.ReadLine();
+                    Console.Write("Введите Свою группу: ");
+                    var group = Console.ReadLine();
+                    SendRegMessage(userName, password, int.Parse(group));
+                }
+                if (message.Equals("Pass", StringComparison.OrdinalIgnoreCase))
+                {
+                    var user = JsonSerializer.Deserialize<User>(message);
+                    User = user;
+                }
+                Console.WriteLine(message);
+            }
+        }
+
+        private static void SendRegMessage(string userName, string password, int group = 0)
+        {
+            var regOrAuthMessage = ClientHelper.GetRegOrAuthMessage(userName, password, true, group);
             string json = JsonSerializer.Serialize(regOrAuthMessage);
             byte[] authData = Encoding.UTF8.GetBytes(json);
             stream.Write(authData, 0, authData.Length);

@@ -1,5 +1,6 @@
 ﻿using DataAccessLayer.AbstractionServices;
 using DataAccessLayer.Model;
+using DataAccessLayer.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,14 +10,23 @@ namespace DataAccessLayer.Services
 {
     public class UserService : IUserService
     {
-        public bool Auth(string name, string pass)
+        private readonly UserRepository userRepository = new UserRepository();
+        public async Task<User> Auth(AuthorizationMessage message)
         {
-            throw new NotImplementedException();
+            if (message == null)
+                throw new ArgumentNullException();
+            var result = await userRepository.GetUserByNameAndPassword(message);
+
+            return result;
         }
 
-        public Task<User> Create(User user)
+        public async Task<User> Create(User user)
         {
-            throw new NotImplementedException();
+            if (user == null)
+                throw new ArgumentException("Value can not be empty");
+            var newUserID = await userRepository.CreateUser(user);
+
+            return newUserID;
         }
     }
 }

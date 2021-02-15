@@ -1,5 +1,6 @@
 ﻿using DataAccessLayer;
 using DataAccessLayer.Model;
+using DataAccessLayer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ChatServer
 {
@@ -14,6 +16,9 @@ namespace ChatServer
     {
         static TcpListener tcpListener; 
         List<ClientService> clients = new List<ClientService>();
+        private readonly GroupService groupService = new GroupService();
+        private readonly MessageService messageService = new MessageService();
+        private readonly UserService userService = new UserService();
         protected internal void AddConnection(ClientService clientObject)
         {
             clients.Add(clientObject);
@@ -47,10 +52,26 @@ namespace ChatServer
             }
         }
 
+        internal void SendResponsOnAuth(string userJson, string sessionId)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(userJson);
+            var user = clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
+            user.Stream.Write(data, 0, data.Length);
+        }
+
+        internal async Task<User> CreateUser(AuthorizationMessage user)
+        {
+            var res = await userService.Create(new User { Name = user.UserName,
+                                                    Pass = user.Pass });
+
+            return res;
+
+        }
+
         internal bool AuthorizationUser(AuthorizationMessage msg, string sessionId)
         {
             var st = DALHelper.Authorization(msg);
-            //clients.Where(w => w.SessionId == sessionId).FirstOrDefault().groupId = st.GroupID;
+            var result = userService.Auth(msg);
             return st == null ? false : true;
         }
 
@@ -67,7 +88,7 @@ namespace ChatServer
             }
         }
 
-        internal void SendOffer(string msg, string sessionId)
+        internal void SendOffer(string sessionId)
         {
             var response = "Хотите зарегистироваться y/n";
             byte[] data = Encoding.UTF8.GetBytes(response);
