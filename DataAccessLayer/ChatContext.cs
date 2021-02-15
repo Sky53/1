@@ -26,5 +26,12 @@ namespace DataAccessLayer
                 optionsBuilder.UseNpgsql("Host = localhost; Port = 5432; Database = Chat; Username = postgres; Password = fgtkmcby");
             }
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<AuthorizationMessage>().ToTable("AuthorizationMessage");
+            modelBuilder.Entity<TextMessage>().ToTable("TextMessage");
+        }
     }
 }

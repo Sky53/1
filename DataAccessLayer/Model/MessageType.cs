@@ -2,7 +2,7 @@
 {
     public enum MessageType
     {
-        Authorization,
+        Authorization = 1,
         Text,
         Greeting,//???
 
