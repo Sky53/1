@@ -62,16 +62,17 @@ namespace ChatServer
         internal async Task<User> CreateUser(AuthorizationMessage user)
         {
             var res = await userService.Create(new User { Name = user.UserName,
-                                                    Pass = user.Pass });
+                                                    Pass = user.Pass,
+                                                    Group = null});
 
             return res;
         }
 
-        internal async Task<bool> AuthorizationUser(AuthorizationMessage msg, string sessionId)
+        internal async Task<User> AuthorizationUser(AuthorizationMessage msg, string sessionId)
         {
             //var st = DALHelper.Authorization(msg);
             var result = await userService.Auth(msg);
-            return result == null ? false : true;
+            return result ;
         }
 
         protected internal void BroadcastMessage(string message, string id, Group groupq = null)

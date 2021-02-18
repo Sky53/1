@@ -35,7 +35,7 @@ namespace ChatClient
                 SendRegMessage(userName, password);
                 Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
                 receiveThread.Start();
-                ReceiveMessage();
+                //ReceiveMessage();
             }
             catch (Exception ex)
             {
@@ -131,7 +131,7 @@ namespace ChatClient
                     Console.WriteLine("Добро пожаловать, {0}", userName);//TODO hello
                     SendMessage();
                 }
-                Console.WriteLine(message);
+                //Console.WriteLine(message);
             }
         }
 

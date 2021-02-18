@@ -47,11 +47,13 @@ namespace ChatServer
                                server.SendResponsOnAuth(userJson, this.SessionId);
                             }
                             var statusAuth = await server.AuthorizationUser(obj, this.SessionId);
-                            if (statusAuth)
+                            if (statusAuth != null)
                             {
                                 userName = obj.UserName;//userdata
+                                 obj.SessionId = SessionId;//userdata
+                                groupId = statusAuth.Group.Id;
                                 msg = userName + " вошел в чат";
-                                server.BroadcastMessage(msg, this.SessionId);
+                                server.BroadcastMessage(msg, this.SessionId, statusAuth.Group);
                                 Console.WriteLine(msg);
                             }
                             else
@@ -70,7 +72,7 @@ namespace ChatServer
                         }
                        
                     }
-                    catch
+                    catch(Exception wxc)
                     {
                         var msg = String.Format("{0}: покинул чат", userName);
                         Console.WriteLine(msg);

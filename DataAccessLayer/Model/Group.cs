@@ -12,7 +12,7 @@ namespace DataAccessLayer.Model
         public string Name { get; set; }
 
         public List<User> User { get; set; }
-        public Guid MessagBaseMessageID { get; set; }
-        public BaseMessage BaseMessage { get; set; }
+        //public Guid? MessagBaseMessageID { get; set; }
+        //public BaseMessage BaseMessage { get; set; }
     }
 }

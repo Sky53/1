@@ -15,7 +15,10 @@ namespace DataAccessLayer.Repositories
         {
             try
             {
+                var group = user.Group == null ? new Group { Id = 1, Name = "Common" } : user.Group;
+                user.Group = group;
                 await _chatContext.Users.AddAsync(user);
+                await _chatContext.Groups.AddAsync(group);
                 await _chatContext.SaveChangesAsync();
             }
             catch (Exception exc)
