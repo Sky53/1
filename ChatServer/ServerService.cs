@@ -1,6 +1,5 @@
-﻿using DataAccessLayer;
+﻿using ChatServer.Services;
 using DataAccessLayer.Model;
-using DataAccessLayer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,17 +57,21 @@ namespace ChatServer
             var user = clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
             user.Stream.Write(data, 0, data.Length);
         }
+        /**
+         * 
+         * Pass 
+         * */
 
-        internal async Task<User> CreateUser(AuthorizationMessage user)
+        internal async Task<User> CreateUser(BaseMessage user)
         {
-            var res = await userService.Create(new User { Name = user.UserName,
-                                                    Pass = user.Pass,
+            var res = await userService.Create(new User { Name = user.Loggin,
+                                                    Pass = user.Body,
                                                     Group = null});
 
             return res;
         }
 
-        internal async Task<User> AuthorizationUser(AuthorizationMessage msg, string sessionId)
+        internal async Task<User> AuthorizationUser(BaseMessage msg, string sessionId)
         {
             //var st = DALHelper.Authorization(msg);
             var result = await userService.Auth(msg);

@@ -1,4 +1,4 @@
-﻿using DataAccessLayer.Abstraction;
+﻿using DataAccessLayer;
 using DataAccessLayer.Model;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -7,36 +7,36 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAccessLayer.Repositories
+namespace ChatServer.Repositories
 {
-    public class MessageRepository : IMessageRepository
+    public class MessageRepository
     {
         private ChatContext _chatContext { get; set; } = new ChatContext();
-        public async Task<Guid> CreateMessage(TextMessage message)
+        public async Task<Guid> CreateMessage(BaseMessage message)
         {
-            await _chatContext.TextMessages.AddAsync(message);
+            await _chatContext.BaseMessages.AddAsync(message);
             await _chatContext.SaveChangesAsync();
 
             return message.Id;
         }
 
-        public async Task DeleteMessage(TextMessage user)
+        public async Task DeleteMessage(BaseMessage user)
         {
-            _chatContext.TextMessages.Remove(user);
+            _chatContext.BaseMessages.Remove(user);
             await _chatContext.SaveChangesAsync();
         }
 
-        public async Task<List<TextMessage>> GetMessagesForGroup(long id)
+        public async Task<List<BaseMessage>> GetMessagesForGroup(long id)
         {
-            var result =  await _chatContext.TextMessages.ToListAsync();
+            var result = await _chatContext.BaseMessages.ToListAsync();
             await _chatContext.SaveChangesAsync();
 
             return id == 0 ? result : result.Where(w => w.GroupId == id).ToList();
         }
 
-        public async Task UpdateMessage(TextMessage message)
+        public async Task UpdateMessage(BaseMessage message)
         {
-            _chatContext.TextMessages.Update(message);
+            _chatContext.BaseMessages.Update(message);
             await _chatContext.SaveChangesAsync();
         }
     }

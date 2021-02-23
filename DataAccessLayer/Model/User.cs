@@ -10,13 +10,12 @@ namespace DataAccessLayer.Model
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
-        public string SessionId { get; set; }
         public string Name { get; set; }
         public string Pass { get; set; }
 
-        public long GroupID { get; set; }
+        public long GroupId { get; set; }
         public Group Group { get; set; }
-        public Guid? BaseMessageID { get; set; }
+        public Guid? BaseMessageId { get; set; }
         public List<BaseMessage> BaseMessage { get; set; } = new List<BaseMessage>();
     }
 }

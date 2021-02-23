@@ -3,8 +3,6 @@
     public enum MessageType
     {
         Authorization = 1,
-        Text,
-        Greeting,//???
-
+        Text = 2
     }
 }

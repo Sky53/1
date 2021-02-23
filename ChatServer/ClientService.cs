@@ -36,40 +36,40 @@ namespace ChatServer
                 {
                     try
                     {
-                        var msg = GetMessage();
-                        if (msg.Contains("pass", StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            AuthorizationMessage obj = MessageAuthParse(msg);
-                            if (obj.IsReg == true)
-                            {
-                               var user =  server.CreateUser(obj);
-                               var userJson =  JsonSerializer.Serialize(user);
-                               server.SendResponsOnAuth(userJson, this.SessionId);
-                            }
-                            var statusAuth = await server.AuthorizationUser(obj, this.SessionId);
-                            if (statusAuth != null)
-                            {
-                                userName = obj.UserName;//userdata
-                                 obj.SessionId = SessionId;//userdata
-                                groupId = statusAuth.Group.Id;
-                                msg = userName + " вошел в чат";
-                                server.BroadcastMessage(msg, this.SessionId, statusAuth.Group);
-                                Console.WriteLine(msg);
-                            }
-                            else
-                            {
-                                server.SendOffer(this.SessionId);
-                            }
-                        }
-                        if (msg.Contains("body", StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            TextMessage obj = MessageTextParse(msg);
-                            ChatContext.TextMessages.Add(obj);
-                            ChatContext.SaveChangesAsync();
-                            msg = String.Format("{0} {1}", userName, obj.Body);
-                            Console.WriteLine(msg);
-                            server.BroadcastMessage(msg, this.SessionId, obj.Group);
-                        }
+                        //var msg = GetMessage();
+                        //if (msg.Contains("pass", StringComparison.InvariantCultureIgnoreCase))
+                        //{
+                        //    AuthorizationMessage obj = MessageAuthParse(msg);
+                        //    if (obj.IsReg == true)
+                        //    {
+                        //       var user =  server.CreateUser(obj);
+                        //       var userJson =  JsonSerializer.Serialize(user);
+                        //       server.SendResponsOnAuth(userJson, this.SessionId);
+                        //    }
+                        //    var statusAuth = await server.AuthorizationUser(obj, this.SessionId);
+                        //    if (statusAuth != null)
+                        //    {
+                        //        userName = obj.UserName;//userdata
+                        //         obj.SessionId = SessionId;//userdata
+                        //        groupId = statusAuth.Group.Id;
+                        //        msg = userName + " вошел в чат";
+                        //        server.BroadcastMessage(msg, this.SessionId, statusAuth.Group);
+                        //        Console.WriteLine(msg);
+                        //    }
+                        //    else
+                        //    {
+                        //        server.SendOffer(this.SessionId);
+                        //    }
+                        //}
+                        //if (msg.Contains("body", StringComparison.InvariantCultureIgnoreCase))
+                        //{
+                        //    TextMessage obj = MessageTextParse(msg);
+                        //    ChatContext.TextMessages.Add(obj);
+                        //    ChatContext.SaveChangesAsync();
+                        //    msg = String.Format("{0} {1}", userName, obj.Body);
+                        //    Console.WriteLine(msg);
+                        //    server.BroadcastMessage(msg, this.SessionId, obj.Group);
+                        //}
                        
                     }
                     catch(Exception wxc)

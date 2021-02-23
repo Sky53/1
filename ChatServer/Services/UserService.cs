@@ -1,17 +1,16 @@
-﻿using DataAccessLayer.AbstractionServices;
+﻿using ChatServer.Repositories;
 using DataAccessLayer.Model;
-using DataAccessLayer.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAccessLayer.Services
+namespace ChatServer.Services
 {
-    public class UserService : IUserService
+    public class UserService
     {
         private readonly UserRepository userRepository = new UserRepository();
-        public async Task<User> Auth(AuthorizationMessage message)
+        public async Task<User> Auth(BaseMessage message)
         {
             if (message == null)
                 throw new ArgumentNullException();

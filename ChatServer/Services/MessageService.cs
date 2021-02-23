@@ -1,22 +1,21 @@
-﻿using DataAccessLayer.AbstractionServices;
+﻿using ChatServer.Repositories;
 using DataAccessLayer.Model;
-using DataAccessLayer.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAccessLayer.Services
+namespace ChatServer.Services
 {
-    public class MessageService : IMessageService
+    public class MessageService
     {
         public readonly MessageRepository messageRepository = new MessageRepository();
-        public async Task Send(TextMessage textMessage)
+        public async Task Send(BaseMessage textMessage)
         {
             if (textMessage == null)
                 throw new ArgumentException("Value can not be empty");
 
-             await messageRepository.CreateMessage(textMessage);
+            await messageRepository.CreateMessage(textMessage);
         }
     }
 }

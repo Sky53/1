@@ -1,4 +1,4 @@
-﻿using DataAccessLayer.Abstraction;
+﻿using DataAccessLayer;
 using DataAccessLayer.Model;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAccessLayer.Repositories
+namespace ChatServer.Repositories
 {
-    public class GroupRepository /*: IGroupRepository*/
+    public class GroupRepository
     {
         private ChatContext _chatContext { get; set; } = new ChatContext();
         public async Task<long> CreateGroup(Group group)

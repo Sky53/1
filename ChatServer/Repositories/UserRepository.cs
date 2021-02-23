@@ -1,4 +1,4 @@
-﻿using DataAccessLayer.Abstraction;
+﻿using DataAccessLayer;
 using DataAccessLayer.Model;
 using System;
 using System.Collections.Generic;
@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAccessLayer.Repositories
+namespace ChatServer.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository
     {
         private ChatContext _chatContext { get; set; } = new ChatContext();
         public async Task<User> CreateUser(User user)
@@ -34,9 +34,12 @@ namespace DataAccessLayer.Repositories
             await _chatContext.SaveChangesAsync();
         }
 
-        public async Task<User> GetUserByNameAndPassword(AuthorizationMessage authorizationMessage)
+        /**
+         * PAssword
+         * */
+        public async Task<User> GetUserByNameAndPassword(BaseMessage authorizationMessage)
         {
-            var result = _chatContext.Users.Where(w => w.Name == authorizationMessage.UserName && w.Pass == authorizationMessage.Pass).FirstOrDefault();
+            var result = _chatContext.Users.Where(w => w.Name == authorizationMessage.Loggin && w.Pass == authorizationMessage.Body).FirstOrDefault();
 
             return result;
         }
