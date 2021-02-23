@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -53,6 +54,14 @@ namespace ChatServer
             }
         }
 
+        internal async Task SendUserData(Message<UserDTO> msq, string sessionId)
+        {
+            var user = JsonSerializer.Serialize(msq);
+            byte[] data = Encoding.UTF8.GetBytes(user);
+            var usr = clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
+            usr.Stream.Write(data, 0, data.Length);
+        }
+
         internal async Task processingMessage(User user, Message<TxtMessage> objMsg)
         {
             BaseMessage message = ParseMessage(objMsg);
@@ -68,25 +77,16 @@ namespace ChatServer
                 Type = 2,
                 Body = objMsg.Body.Text,
                 GroupId = objMsg.GroupId ?? null
+                //GroupId = objMsg.GroupId == 0 ? null : objMsg.GroupId,
+                //Group = objMsg.GroupId == 0 ? null : new Group { Id = (long)objMsg.GroupId }
             };
         }
 
-        internal void SendResponsOnAuth(string userJson, string sessionId)
+        internal async Task<User> CreateUser(Message<AuthMessage> user)
         {
-            byte[] data = Encoding.UTF8.GetBytes(userJson);
-            var user = clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
-            user.Stream.Write(data, 0, data.Length);
-        }
-        /**
-         * 
-         * Pass 
-         * */
-
-        internal async Task<DataAccessLayer.Model.User> CreateUser(Message<AuthMessage> user)
-        {
-            var res = await userService.Create(new DataAccessLayer.Model.User
+            var res = await userService.Create(new User
             {
-                Name = user.Loggin,
+                Name = user.Body.Login,
                 Pass = user.Body.Pass,
                 GroupId = user.GroupId ?? 0
             });

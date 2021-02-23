@@ -40,7 +40,7 @@ namespace ChatServer.Repositories
          * */
         public async Task<User> GetUserByNameAndPassword(Message<AuthMessage> authorizationMessage)
         {
-            var result = _chatContext.Users.Where(w => w.Name == authorizationMessage.Loggin && w.Pass == authorizationMessage.Body.Pass).FirstOrDefault();
+            var result = _chatContext.Users.Where(w => w.Name == authorizationMessage.Body.Login && w.Pass == authorizationMessage.Body.Pass).FirstOrDefault();
 
             return result;
         }

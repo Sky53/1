@@ -16,6 +16,7 @@ namespace ChatServer
         protected internal string SessionId { get; private set; }
         protected internal NetworkStream Stream { get; private set; }
         string userName;
+        UserDTO UserDTO;
         public long groupId = 0;
         TcpClient client;
         ServerService server;
@@ -43,6 +44,14 @@ namespace ChatServer
                 }
                 userName = user.Name;
                 string message = userName + " вошел в чат";
+                var userDTO = new Message<UserDTO>
+                {
+                    Loggin = user.Name,
+                    Type = 3,
+                    Body = new UserDTO { Id = user.Id, GroupId = user.GroupId, Name = user.Name, Pass = user.Pass },
+                    GroupId = user.GroupId
+                };
+                await server.SendUserData(userDTO, SessionId);
                 server.BroadcastMessage(message, SessionId);
                 Console.WriteLine(message);
                 while (true)
@@ -88,14 +97,6 @@ namespace ChatServer
             return JsonSerializer.Deserialize<Message<TxtMessage>>(msg);
         }
 
-        //private static AuthorizationMessage MessageAuthParse(string msg)
-        //{
-        //    return JsonSerializer.Deserialize<AuthorizationMessage>(msg);
-        //}
-
-        /*
-         * Вернуть обект, Создать метод передачи обекта для анализа
-         */
         private string GetMessage()
         {
             byte[] data = new byte[512];

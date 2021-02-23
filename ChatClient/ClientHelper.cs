@@ -9,7 +9,7 @@ namespace ChatClient
     {
         internal static Message<AuthMessage> GetRegOrAuthMessage(string userName, string password, int groupID = 0)
         {
-            return new Message<AuthMessage> {Loggin = userName, Body = new AuthMessage { Pass = password  }, GroupId = groupID, Type = 1 };
+            return new Message<AuthMessage> { Body = new AuthMessage { Pass = password, Login = userName  }, GroupId = groupID, Type = 1 };
         }
     }
 }

@@ -14,7 +14,8 @@ namespace ChatClient
     class Client
     {
         static string userName;
-        static User User;
+        static bool IsActiv;
+        public static UserDTO User = null;
         private const string host = "127.0.0.1";
         private const int port = 1313;
         static TcpClient client;
@@ -59,17 +60,17 @@ namespace ChatClient
 
         private static string MakeMessage()
         {
-
             Console.Write("Введите сообщение: ");
             var text = Console.ReadLine();
-            Console.Write("для группы y/n: ");
+            Console.Write("для общей группы y/n: ");
             var group = Console.ReadLine();
+            var forAll = group.Contains("y", StringComparison.InvariantCultureIgnoreCase);
             var message = new Message<TxtMessage>
             {
-                GroupId = group.Equals("0") ? 0 : long.Parse(group),
+                GroupId = forAll ? null : User.GroupId,
                 Loggin = userName,
                 Type = 2,
-                Body = new TxtMessage { Text = text},
+                Body = new TxtMessage { Text = text },
                 CreateDate = DateTime.Now,
             };
             string json = JsonSerializer.Serialize(message);
@@ -112,6 +113,18 @@ namespace ChatClient
             {
                 Disconnect();
             }
+            if (message.Contains("\"Type\":3"))
+            {
+                var user = JsonSerializer.Deserialize<Message<UserDTO>>(message);
+                User = user.Body;
+                IsActiv = true;
+                Console.WriteLine($"Welcome {User.Name}");
+            }
+            if (message.Contains("\"type\": 2"))
+            {
+                Console.WriteLine(message);
+            }
+
         }
 
         private static void SendRegMessage(string userName, string password, bool isReg = false, int group = 0)

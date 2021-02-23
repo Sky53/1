@@ -14,9 +14,8 @@ namespace ChatServer.Repositories
         private ChatContext _chatContext { get; set; } = new ChatContext();
         public async Task<Guid> CreateMessage(BaseMessage message)
         {
-            message.GroupId = message.GroupId == 0 ? null : message.GroupId;
             await _chatContext.BaseMessages.AddAsync(message);
-            await _chatContext.SaveChangesAsync();
+             _chatContext.SaveChanges();
 
             return message.Id;
         }
