@@ -1,4 +1,5 @@
-﻿using ChatServer.Repositories;
+﻿using ChatServer.DTO;
+using ChatServer.Repositories;
 using DataAccessLayer.Model;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace ChatServer.Services
     public class UserService
     {
         private readonly UserRepository userRepository = new UserRepository();
-        public async Task<User> Auth(BaseMessage message)
+        public async Task<User> Auth(Message<AuthMessage> message)
         {
             if (message == null)
                 throw new ArgumentNullException();

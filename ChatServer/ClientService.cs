@@ -1,10 +1,12 @@
-﻿using DataAccessLayer;
+﻿using ChatServer.DTO;
+using DataAccessLayer;
 using DataAccessLayer.Model;
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace ChatServer
 {
@@ -32,51 +34,33 @@ namespace ChatServer
             try
             {
                 Stream = client.GetStream();
+                var authMSG = GetMessage();
+                var user = await AnalysFirstMessage(authMSG);
+                if (user == null)
+                {
+                    server.SendError(SessionId);
+                    throw new ArgumentException();
+                }
+                userName = user.Name;
+                string message = userName + " вошел в чат";
+                server.BroadcastMessage(message, SessionId);
+                Console.WriteLine(message);
                 while (true)
                 {
                     try
                     {
-                        //var msg = GetMessage();
-                        //if (msg.Contains("pass", StringComparison.InvariantCultureIgnoreCase))
-                        //{
-                        //    AuthorizationMessage obj = MessageAuthParse(msg);
-                        //    if (obj.IsReg == true)
-                        //    {
-                        //       var user =  server.CreateUser(obj);
-                        //       var userJson =  JsonSerializer.Serialize(user);
-                        //       server.SendResponsOnAuth(userJson, this.SessionId);
-                        //    }
-                        //    var statusAuth = await server.AuthorizationUser(obj, this.SessionId);
-                        //    if (statusAuth != null)
-                        //    {
-                        //        userName = obj.UserName;//userdata
-                        //         obj.SessionId = SessionId;//userdata
-                        //        groupId = statusAuth.Group.Id;
-                        //        msg = userName + " вошел в чат";
-                        //        server.BroadcastMessage(msg, this.SessionId, statusAuth.Group);
-                        //        Console.WriteLine(msg);
-                        //    }
-                        //    else
-                        //    {
-                        //        server.SendOffer(this.SessionId);
-                        //    }
-                        //}
-                        //if (msg.Contains("body", StringComparison.InvariantCultureIgnoreCase))
-                        //{
-                        //    TextMessage obj = MessageTextParse(msg);
-                        //    ChatContext.TextMessages.Add(obj);
-                        //    ChatContext.SaveChangesAsync();
-                        //    msg = String.Format("{0} {1}", userName, obj.Body);
-                        //    Console.WriteLine(msg);
-                        //    server.BroadcastMessage(msg, this.SessionId, obj.Group);
-                        //}
-                       
+                        var msg = GetMessage();
+                        var objMsg = MessageTextParse(msg);
+                        await server.processingMessage(user, objMsg);
+                        msg = String.Format("{0}: {1}", userName, objMsg.Body.Text);
+                        Console.WriteLine(msg);
+                        server.BroadcastMessage(message, SessionId);
                     }
-                    catch(Exception wxc)
+                    catch (Exception wxc)
                     {
                         var msg = String.Format("{0}: покинул чат", userName);
                         Console.WriteLine(msg);
-                        server.BroadcastMessage(msg, this.SessionId);
+                        server.BroadcastMessage(msg, SessionId);
                         break;
                     }
                 }
@@ -92,15 +76,22 @@ namespace ChatServer
             }
         }
 
-        private TextMessage MessageTextParse(string msg)
+        private async Task<User> AnalysFirstMessage(string msg)
         {
-            return JsonSerializer.Deserialize<TextMessage>(msg);
+            var regMSG = JsonSerializer.Deserialize<Message<AuthMessage>>(msg);
+            var status = await server.AuthorizationUser(regMSG);
+            return status;
         }
 
-        private static AuthorizationMessage MessageAuthParse(string msg)
+        private Message<TxtMessage> MessageTextParse(string msg)
         {
-            return JsonSerializer.Deserialize<AuthorizationMessage>(msg);
+            return JsonSerializer.Deserialize<Message<TxtMessage>>(msg);
         }
+
+        //private static AuthorizationMessage MessageAuthParse(string msg)
+        //{
+        //    return JsonSerializer.Deserialize<AuthorizationMessage>(msg);
+        //}
 
         /*
          * Вернуть обект, Создать метод передачи обекта для анализа

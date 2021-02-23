@@ -1,4 +1,5 @@
-﻿using DataAccessLayer;
+﻿using ChatServer.DTO;
+using DataAccessLayer;
 using DataAccessLayer.Model;
 using System;
 using System.Collections.Generic;
@@ -37,9 +38,9 @@ namespace ChatServer.Repositories
         /**
          * PAssword
          * */
-        public async Task<User> GetUserByNameAndPassword(BaseMessage authorizationMessage)
+        public async Task<User> GetUserByNameAndPassword(Message<AuthMessage> authorizationMessage)
         {
-            var result = _chatContext.Users.Where(w => w.Name == authorizationMessage.Loggin && w.Pass == authorizationMessage.Body).FirstOrDefault();
+            var result = _chatContext.Users.Where(w => w.Name == authorizationMessage.Loggin && w.Pass == authorizationMessage.Body.Pass).FirstOrDefault();
 
             return result;
         }

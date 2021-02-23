@@ -1,4 +1,4 @@
-﻿using DataAccessLayer.Model;
+﻿using ChatServer.DTO;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,9 +7,9 @@ namespace ChatClient
 {
     public class ClientHelper
     {
-        internal static AuthorizationMessage GetRegOrAuthMessage(string userName, string password, bool isReg = false, int groupID = 0)
+        internal static Message<AuthMessage> GetRegOrAuthMessage(string userName, string password, int groupID = 0)
         {
-            return new AuthorizationMessage (userName, password, isReg = isReg, groupID);
+            return new Message<AuthMessage> {Loggin = userName, Body = new AuthMessage { Pass = password  }, GroupId = groupID, Type = 1 };
         }
     }
 }

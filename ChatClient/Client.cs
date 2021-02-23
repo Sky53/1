@@ -1,5 +1,6 @@
-﻿using DataAccessLayer.Model;
-using DataAccessLayer.Services;
+﻿using ChatServer.DTO;
+using ChatServer.Services;
+using DataAccessLayer.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,6 @@ namespace ChatClient
     {
         static string userName;
         static User User;
-        static List<Group> Groups = new GroupService().GetGroups().GetAwaiter().GetResult();
         private const string host = "127.0.0.1";
         private const int port = 1313;
         static TcpClient client;
@@ -26,16 +26,17 @@ namespace ChatClient
             userName = Console.ReadLine();
             Console.Write("Введите свой пароль: ");
             var password = Console.ReadLine();
-
+            Console.Write("Выберите ID своей группы: ");
+            var group = Console.ReadLine();
             client = new TcpClient();
             try
             {
                 client.Connect(host, port);
                 stream = client.GetStream();
-                SendRegMessage(userName, password);
                 Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
                 receiveThread.Start();
-                //ReceiveMessage();
+                SendRegMessage(userName, password, group: int.Parse(group));
+                SendMessage();
             }
             catch (Exception ex)
             {
@@ -50,12 +51,9 @@ namespace ChatClient
         {
             while (true)
             {
-                if (User != null)
-                {
-                    string Message = MakeMessage();
-                    byte[] data = Encoding.UTF8.GetBytes(Message);
-                    stream.Write(data, 0, data.Length);
-                }
+                string Message = MakeMessage();
+                byte[] data = Encoding.UTF8.GetBytes(Message);
+                stream.Write(data, 0, data.Length);
             }
         }
 
@@ -64,13 +62,15 @@ namespace ChatClient
 
             Console.Write("Введите сообщение: ");
             var text = Console.ReadLine();
-            var message = new TextMessage
+            Console.Write("для группы y/n: ");
+            var group = Console.ReadLine();
+            var message = new Message<TxtMessage>
             {
-                GroupId = 0,
-                UserName = userName,
-                Body = text,
+                GroupId = group.Equals("0") ? 0 : long.Parse(group),
+                Loggin = userName,
+                Type = 2,
+                Body = new TxtMessage { Text = text},
                 CreateDate = DateTime.Now,
-                SessionId = User.SessionId
             };
             string json = JsonSerializer.Serialize(message);
 
@@ -97,7 +97,7 @@ namespace ChatClient
                     AnalysisMessage(message);
 
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Console.WriteLine("Подключение прервано!");
                     Console.ReadLine();
@@ -108,36 +108,15 @@ namespace ChatClient
 
         private static void AnalysisMessage(string message)
         {
-            if (message.Equals("Хотите зарегистироваться y/n"))
+            if (message.Equals("Exit"))
             {
-                Console.WriteLine(message);
-                var answer = Console.ReadLine();
-                if (answer.Equals("n"))
-                {
-                    Disconnect();
-                }
-                else
-                {
-                    Console.Write("Введите свой пароль еще раз: ");
-                    var password = Console.ReadLine();
-                    //Console.Write("Введите Свою группу: ");
-                    //var group = Console.ReadLine();
-                    SendRegMessage(userName, password, isReg: true);
-                }
-                if (message.Equals("Pass", StringComparison.OrdinalIgnoreCase))
-                {
-                    var user = JsonSerializer.Deserialize<User>(message);
-                    User = user;
-                    Console.WriteLine("Добро пожаловать, {0}", userName);//TODO hello
-                    SendMessage();
-                }
-                //Console.WriteLine(message);
+                Disconnect();
             }
         }
 
         private static void SendRegMessage(string userName, string password, bool isReg = false, int group = 0)
         {
-            var regOrAuthMessage = ClientHelper.GetRegOrAuthMessage(userName, password, isReg, group);
+            var regOrAuthMessage = ClientHelper.GetRegOrAuthMessage(userName, password, groupID: group);
             string json = JsonSerializer.Serialize(regOrAuthMessage);
             byte[] authData = Encoding.UTF8.GetBytes(json);
             stream.Write(authData, 0, authData.Length);

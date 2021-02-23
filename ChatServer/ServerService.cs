@@ -1,5 +1,7 @@
-﻿using ChatServer.Services;
+﻿using ChatServer.DTO;
+using ChatServer.Services;
 using DataAccessLayer.Model;
+//using DataAccessLayer.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +15,7 @@ namespace ChatServer
 {
     public class ServerService
     {
-        static TcpListener tcpListener; 
+        static TcpListener tcpListener;
         List<ClientService> clients = new List<ClientService>();
         private readonly GroupService groupService = new GroupService();
         private readonly MessageService messageService = new MessageService();
@@ -51,6 +53,24 @@ namespace ChatServer
             }
         }
 
+        internal async Task processingMessage(User user, Message<TxtMessage> objMsg)
+        {
+            BaseMessage message = ParseMessage(objMsg);
+            messageService.Send(message);
+        }
+
+        private BaseMessage ParseMessage(Message<TxtMessage> objMsg)
+        {
+            return new BaseMessage
+            {
+                Loggin = objMsg.Loggin,
+                CreateDate = DateTime.Now,
+                Type = 2,
+                Body = objMsg.Body.Text,
+                GroupId = objMsg.GroupId ?? null
+            };
+        }
+
         internal void SendResponsOnAuth(string userJson, string sessionId)
         {
             byte[] data = Encoding.UTF8.GetBytes(userJson);
@@ -62,25 +82,28 @@ namespace ChatServer
          * Pass 
          * */
 
-        internal async Task<User> CreateUser(BaseMessage user)
+        internal async Task<DataAccessLayer.Model.User> CreateUser(Message<AuthMessage> user)
         {
-            var res = await userService.Create(new User { Name = user.Loggin,
-                                                    Pass = user.Body,
-                                                    Group = null});
+            var res = await userService.Create(new DataAccessLayer.Model.User
+            {
+                Name = user.Loggin,
+                Pass = user.Body.Pass,
+                GroupId = user.GroupId ?? 0
+            });
 
             return res;
         }
 
-        internal async Task<User> AuthorizationUser(BaseMessage msg, string sessionId)
+        internal async Task<DataAccessLayer.Model.User> AuthorizationUser(Message<AuthMessage> msg)
         {
             //var st = DALHelper.Authorization(msg);
             var result = await userService.Auth(msg);
-            return result ;
+            return result;
         }
 
-        protected internal void BroadcastMessage(string message, string id, Group groupq = null)
+        protected internal void BroadcastMessage(string message, string id, long groupq = 0)
         {
-            var users = groupq == null ? clients : clients.Where(w => w.groupId == groupq.Id).ToList();
+            var users = groupq == 0 ? clients : clients.Where(w => w.groupId == groupq).ToList();
             byte[] data = Encoding.UTF8.GetBytes(message);
             for (int i = 0; i < users.Count; i++)
             {
@@ -99,15 +122,22 @@ namespace ChatServer
             user.Stream.Write(data, 0, data.Length);
         }
 
+        internal void SendError(string sessionId)
+        {
+            var response = "Exit";
+            byte[] data = Encoding.UTF8.GetBytes(response);
+            var user = clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
+            user.Stream.Write(data, 0, data.Length);
+        }
         protected internal void Disconnect()
         {
             tcpListener.Stop();
 
             for (int i = 0; i < clients.Count; i++)
             {
-                clients[i].Close(); 
+                clients[i].Close();
             }
-            Environment.Exit(0); 
+            Environment.Exit(0);
         }
     }
 }

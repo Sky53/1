@@ -16,7 +16,6 @@ namespace DataAccessLayer
         public ChatContext()
         {
             Database.Migrate();
-            //Database.EnsureCreated();
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -43,8 +42,6 @@ namespace DataAccessLayer
                 new User { Name = "User4", Pass = "pass", GroupId = 4, Id = 4 },
                 new User { Name = "User5", Pass = "pass", GroupId = 5, Id = 5 }
                 );
-            //modelBuilder.Entity<AuthorizationMessage>().ToTable("AuthorizationMessage");
-            //modelBuilder.Entity<TextMessage>().ToTable("TextMessage");
         }
     }
 }
