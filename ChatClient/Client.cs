@@ -120,11 +120,10 @@ namespace ChatClient
                 IsActiv = true;
                 Console.WriteLine($"Welcome {User.Name}");
             }
-            if (message.Contains("\"type\": 2"))
+            else
             {
                 Console.WriteLine(message);
             }
-
         }
 
         private static void SendRegMessage(string userName, string password, bool isReg = false, int group = 0)

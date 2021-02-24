@@ -63,7 +63,7 @@ namespace ChatServer
                         await server.processingMessage(user, objMsg);
                         msg = String.Format("{0}: {1}", userName, objMsg.Body.Text);
                         Console.WriteLine(msg);
-                        server.BroadcastMessage(message, SessionId);
+                        server.BroadcastMessage(msg, SessionId, objMsg.GroupId);
                     }
                     catch (Exception wxc)
                     {

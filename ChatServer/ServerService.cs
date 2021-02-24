@@ -57,6 +57,8 @@ namespace ChatServer
         internal async Task SendUserData(Message<UserDTO> msq, string sessionId)
         {
             var user = JsonSerializer.Serialize(msq);
+            var u =  clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
+            u.groupId = (long)msq.GroupId;
             byte[] data = Encoding.UTF8.GetBytes(user);
             var usr = clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
             usr.Stream.Write(data, 0, data.Length);
@@ -77,8 +79,6 @@ namespace ChatServer
                 Type = 2,
                 Body = objMsg.Body.Text,
                 GroupId = objMsg.GroupId ?? null
-                //GroupId = objMsg.GroupId == 0 ? null : objMsg.GroupId,
-                //Group = objMsg.GroupId == 0 ? null : new Group { Id = (long)objMsg.GroupId }
             };
         }
 
@@ -101,25 +101,17 @@ namespace ChatServer
             return result;
         }
 
-        protected internal void BroadcastMessage(string message, string id, long groupq = 0)
+        protected internal void BroadcastMessage(string message, string id, long? groupq = 0)
         {
-            var users = groupq == 0 ? clients : clients.Where(w => w.groupId == groupq).ToList();
+            var users = groupq == null ? clients : clients.Where(w => w.groupId == groupq).ToList();
             byte[] data = Encoding.UTF8.GetBytes(message);
             for (int i = 0; i < users.Count; i++)
             {
-                if (clients[i].SessionId != id)
+                if (users[i].SessionId != id)
                 {
-                    clients[i].Stream.Write(data, 0, data.Length);
+                    users[i].Stream.Write(data, 0, data.Length);
                 }
             }
-        }
-
-        internal void SendOffer(string sessionId)
-        {
-            var response = "Хотите зарегистироваться y/n";
-            byte[] data = Encoding.UTF8.GetBytes(response);
-            var user = clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
-            user.Stream.Write(data, 0, data.Length);
         }
 
         internal void SendError(string sessionId)
