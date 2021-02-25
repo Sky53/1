@@ -16,8 +16,7 @@ namespace ChatServer.DataAccessLayer
 
         public ChatContext()
         {
-            //Database.Migrate();
-            Database.EnsureCreated();
+            Database.Migrate();
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
