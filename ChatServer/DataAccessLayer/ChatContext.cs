@@ -37,13 +37,25 @@ namespace ChatServer.DataAccessLayer
                 new Group { Name = "group4", Id = 4 },
                 new Group { Name = "group5", Id = 5 }
                 );
+
             modelBuilder.Entity<User>().HasData(
-                new User { Name = "User1", Pass = "pass", GroupId = 1, Id = 1 },
-                new User { Name = "User2", Pass = "pass", GroupId = 2, Id = 2 },
-                new User { Name = "User3", Pass = "pass", GroupId = 3, Id = 3 },
-                new User { Name = "User4", Pass = "pass", GroupId = 4, Id = 4 },
-                new User { Name = "User5", Pass = "pass", GroupId = 5, Id = 5 }
-                );
+             new User { Name = "User1", Pass = "pass", Id = 1 },
+             new User { Name = "User2", Pass = "pass", Id = 2 },
+             new User { Name = "User3", Pass = "pass", Id = 3 },
+             new User { Name = "User4", Pass = "pass", Id = 4 },
+             new User { Name = "User5", Pass = "pass", Id = 5 }
+             );
+            modelBuilder
+                    .Entity<User>()
+                    .HasMany(p => p.Groups)
+                    .WithMany(p => p.Users)
+                    .UsingEntity(j => j.HasData(
+                        new  { UsersId = 1l, GroupsId = 1l },
+                        new  { UsersId = 2l, GroupsId = 2l },
+                        new  { UsersId = 3l, GroupsId = 3l },
+                        new  { UsersId = 4l, GroupsId = 4l },
+                        new  { UsersId = 5l, GroupsId = 5l }
+                        ));
         }
     }
 }

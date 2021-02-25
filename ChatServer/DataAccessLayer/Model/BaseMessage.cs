@@ -10,13 +10,13 @@ namespace ChatServer.DataAccessLayer.Model
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
-        public string Loggin { get; set; }
         public DateTime CreateDate { get; set; }
         public int Type { get; set; }
         public string Body { get; set; }
 
         public long? GroupId { get; set; }
-        public Group? Group { get; set; }
-        public List<User> Users { get; set; } = new List<User>();
+        public virtual Group? Group { get; set; }
+        public long UserId { get; set; }
+        public virtual User User { get; set; }
     }
 }

@@ -13,9 +13,7 @@ namespace ChatServer.DataAccessLayer.Model
         public string Name { get; set; }
         public string Pass { get; set; }
 
-        public long GroupId { get; set; }
-        public Group Group { get; set; }
         public Guid? BaseMessageId { get; set; }
-        public List<BaseMessage> BaseMessage { get; set; } = new List<BaseMessage>();
+        public virtual ICollection<Group> Groups { get; set; } = new List<Group>();
     }
 }

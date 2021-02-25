@@ -56,24 +56,24 @@ namespace ChatServer
         internal async Task SendUserData(Message<UserDTO> msq, string sessionId)
         {
             var user = JsonSerializer.Serialize(msq);
-            var u =  clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
-            u.groupId = (long)msq.GroupId;
             byte[] data = Encoding.UTF8.GetBytes(user);
             var usr = clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
+            usr.groupId = (long)msq.GroupId;
             usr.Stream.Write(data, 0, data.Length);
         }
 
-        internal async Task processingMessage(User user, Message<TxtMessage> objMsg)
+        internal async Task processingMessage(UserDTO user, Message<TxtMessage> objMsg)
         {
+            objMsg.UserId = user.Id;
             BaseMessage message = ParseMessage(objMsg);
-            messageService.Send(message);
+            await messageService.Send(message);
         }
 
         private BaseMessage ParseMessage(Message<TxtMessage> objMsg)
         {
             return new BaseMessage
             {
-                Loggin = objMsg.Loggin,
+                UserId = objMsg.UserId,
                 CreateDate = DateTime.Now,
                 Type = 2,
                 Body = objMsg.Body.Text,
@@ -87,13 +87,12 @@ namespace ChatServer
             {
                 Name = user.Body.Login,
                 Pass = user.Body.Pass,
-                GroupId = user.GroupId ?? 0
             });
 
             return res;
         }
 
-        internal async Task<User> AuthorizationUser(Message<AuthMessage> msg)
+        internal async Task<UserDTO> AuthorizationUser(Message<AuthMessage> msg)
         {
             var result = await userService.Auth(msg);
             return result;

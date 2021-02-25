@@ -1,8 +1,5 @@
 ﻿using ChatServer.DTO;
-using ChatServer.Services;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -13,7 +10,6 @@ namespace ChatClient
     class Client
     {
         static string userName;
-        static bool IsActiv;
         public static UserDTO User = null;
         private const string host = "127.0.0.1";
         private const int port = 1313;
@@ -116,8 +112,14 @@ namespace ChatClient
             {
                 var user = JsonSerializer.Deserialize<Message<UserDTO>>(message);
                 User = user.Body;
-                IsActiv = true;
                 Console.WriteLine($"Welcome {User.Name}");
+                if (user.Body.Messages != null )
+                {
+                    foreach (var item in user.Body.Messages)
+                    {
+                        Console.WriteLine(item);
+                    }
+                }
             }
             else
             {

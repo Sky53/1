@@ -2,6 +2,7 @@
 using ChatServer.DataAccessLayer.Model;
 using ChatServer.DTO;
 using System;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -11,7 +12,6 @@ namespace ChatServer
 {
     public class ClientService
     {
-
         protected internal string SessionId { get; private set; }
         protected internal NetworkStream Stream { get; private set; }
         string userName;
@@ -41,13 +41,14 @@ namespace ChatServer
                     server.SendError(SessionId);
                     throw new ArgumentException();
                 }
+                UserDTO = user;
                 userName = user.Name;
                 string message = userName + " вошел в чат";
                 var userDTO = new Message<UserDTO>
                 {
                     Loggin = user.Name,
                     Type = 3,
-                    Body = new UserDTO { Id = user.Id, GroupId = user.GroupId, Name = user.Name, Pass = user.Pass },
+                    Body = user,
                     GroupId = user.GroupId
                 };
                 await server.SendUserData(userDTO, SessionId);
@@ -84,7 +85,7 @@ namespace ChatServer
             }
         }
 
-        private async Task<User> AnalysFirstMessage(string msg)
+        private async Task<UserDTO> AnalysFirstMessage(string msg)
         {
             var regMSG = JsonSerializer.Deserialize<Message<AuthMessage>>(msg);
             var status = await server.AuthorizationUser(regMSG);

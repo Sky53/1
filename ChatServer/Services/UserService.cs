@@ -9,13 +9,18 @@ namespace ChatServer.Services
     public class UserService
     {
         private readonly UserRepository userRepository = new UserRepository();
-        public async Task<User> Auth(Message<AuthMessage> message)
+        public async Task<UserDTO> Auth(Message<AuthMessage> message)
         {
             if (message == null)
                 throw new ArgumentNullException();
-            var result = await userRepository.GetUserByNameAndPassword(message);
+            try
+            {
+                var result = await userRepository.GetUserByNameAndPassword(message);
 
-            return result;
+                return result;
+            }
+            catch { }
+            return null;
         }
 
         public async Task<User> Create(User user)
