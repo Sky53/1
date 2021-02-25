@@ -1,4 +1,4 @@
-﻿using DataAccessLayer;
+﻿using ChatServer.DataAccessLayer;
 using System;
 using System.Threading;
 

@@ -1,10 +1,9 @@
-﻿using ChatServer.DTO;
-using DataAccessLayer;
-using DataAccessLayer.Model;
+﻿using ChatServer.DataAccessLayer;
+using ChatServer.DataAccessLayer.Model;
+using ChatServer.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ChatServer.Repositories
@@ -35,9 +34,6 @@ namespace ChatServer.Repositories
             await _chatContext.SaveChangesAsync();
         }
 
-        /**
-         * PAssword
-         * */
         public async Task<User> GetUserByNameAndPassword(Message<AuthMessage> authorizationMessage)
         {
             var result = _chatContext.Users.Where(w => w.Name == authorizationMessage.Body.Login && w.Pass == authorizationMessage.Body.Pass).FirstOrDefault();

@@ -1,8 +1,6 @@
-﻿using ChatServer.Repositories;
-using DataAccessLayer.Model;
+﻿using ChatServer.DataAccessLayer.Model;
+using ChatServer.Repositories;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ChatServer.Services

@@ -1,8 +1,7 @@
-﻿using ChatServer.DTO;
-using DataAccessLayer;
-using DataAccessLayer.Model;
+﻿using ChatServer.DataAccessLayer;
+using ChatServer.DataAccessLayer.Model;
+using ChatServer.DTO;
 using System;
-using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;

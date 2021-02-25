@@ -1,7 +1,6 @@
-﻿using ChatServer.DTO;
+﻿using ChatServer.DataAccessLayer.Model;
+using ChatServer.DTO;
 using ChatServer.Services;
-using DataAccessLayer.Model;
-//using DataAccessLayer.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -94,9 +93,8 @@ namespace ChatServer
             return res;
         }
 
-        internal async Task<DataAccessLayer.Model.User> AuthorizationUser(Message<AuthMessage> msg)
+        internal async Task<User> AuthorizationUser(Message<AuthMessage> msg)
         {
-            //var st = DALHelper.Authorization(msg);
             var result = await userService.Auth(msg);
             return result;
         }
