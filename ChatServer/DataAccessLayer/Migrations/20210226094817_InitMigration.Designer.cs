@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace ChatServer.Migrations
+namespace ChatServer.DataAccessLayer.Migrations
 {
     [DbContext(typeof(ChatContext))]
-    [Migration("20210226092830_InitMigration")]
+    [Migration("20210226094817_InitMigration")]
     partial class InitMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

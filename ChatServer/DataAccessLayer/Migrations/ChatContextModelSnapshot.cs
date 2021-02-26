@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace ChatServer.Migrations
+namespace ChatServer.DataAccessLayer.Migrations
 {
     [DbContext(typeof(ChatContext))]
     partial class ChatContextModelSnapshot : ModelSnapshot
