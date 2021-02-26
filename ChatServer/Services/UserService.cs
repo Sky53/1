@@ -1,6 +1,6 @@
 ﻿using ChatServer.DataAccessLayer.Model;
+using ChatServer.DataAccessLayer.Repositories;
 using ChatServer.DTO;
-using ChatServer.Repositories;
 using System;
 using System.Threading.Tasks;
 

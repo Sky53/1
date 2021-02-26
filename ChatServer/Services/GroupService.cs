@@ -1,5 +1,5 @@
 ﻿using ChatServer.DataAccessLayer.Model;
-using ChatServer.Repositories;
+using ChatServer.DataAccessLayer.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Text;

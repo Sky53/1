@@ -1,12 +1,12 @@
-﻿using ChatServer.DataAccessLayer;
-using ChatServer.DataAccessLayer.Model;
+﻿using ChatServer.DataAccessLayer.Model;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace ChatServer.Repositories
+namespace ChatServer.DataAccessLayer.Repositories
 {
     public class MessageRepository
     {
@@ -14,7 +14,7 @@ namespace ChatServer.Repositories
         public async Task<Guid> CreateMessage(BaseMessage message)
         {
             await _chatContext.BaseMessages.AddAsync(message);
-             _chatContext.SaveChanges();
+            _chatContext.SaveChanges();
 
             return message.Id;
         }

@@ -1,13 +1,13 @@
-﻿using ChatServer.DataAccessLayer;
-using ChatServer.DataAccessLayer.Model;
+﻿using ChatServer.DataAccessLayer.Model;
 using ChatServer.DTO;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace ChatServer.Repositories
+namespace ChatServer.DataAccessLayer.Repositories
 {
     public class UserRepository
     {
@@ -16,10 +16,7 @@ namespace ChatServer.Repositories
         {
             try
             {
-                //var group = user.Group == null ? new Group { Id = 1, Name = "Common" } : user.Group;
-                //user.Group = group;
                 await _chatContext.Users.AddAsync(user);
-                //await _chatContext.Groups.AddAsync(group);
                 await _chatContext.SaveChangesAsync();
             }
             catch (Exception exc)
@@ -67,13 +64,13 @@ namespace ChatServer.Repositories
                     }
                 }
                 if (user != null)
-                     meaasge = _chatContext.BaseMessages.Where(w => w.Type == 2 && w.UserId == user.Id).ToList();
+                    meaasge = _chatContext.BaseMessages.Where(w => w.Type == 2 && w.UserId == user.Id).ToList();
                 return new UserDTO
                 {
                     Id = user.Id,
                     GroupId = user.Groups.FirstOrDefault()?.Id,
                     Name = user.Name,
-                    Messages = meaasge.OrderByDescending( x => x.CreateDate).Skip(0).Take(10).Select(s => s.Body).ToList()
+                    Messages = meaasge.OrderByDescending(x => x.CreateDate).Skip(0).Take(10).Select(s => s.Body).ToList()
                 };
             }
             catch (Exception wx)

@@ -1,11 +1,12 @@
-﻿using ChatServer.DataAccessLayer;
-using ChatServer.DataAccessLayer.Model;
+﻿using ChatServer.DataAccessLayer.Model;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace ChatServer.Repositories
+namespace ChatServer.DataAccessLayer.Repositories
 {
     public class GroupRepository
     {
