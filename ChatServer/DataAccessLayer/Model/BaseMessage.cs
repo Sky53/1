@@ -15,8 +15,8 @@ namespace ChatServer.DataAccessLayer.Model
         public string Body { get; set; }
 
         public long? GroupId { get; set; }
-        public virtual Group? Group { get; set; }
+        public  Group Group { get; set; }
         public long UserId { get; set; }
-        public virtual User User { get; set; }
+        public  User User { get; set; }
     }
 }
