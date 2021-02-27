@@ -12,24 +12,9 @@ namespace ChatServer.Services
         public async Task<UserDTO> Auth(Message<AuthMessage> message)
         {
             if (message == null)
-                throw new ArgumentNullException();
-            try
-            {
-                var result = await userRepository.GetUserByNameAndPassword(message);
-
-                return result;
-            }
-            catch { }
-            return null;
-        }
-
-        public async Task<User> Create(User user)
-        {
-            if (user == null)
-                throw new ArgumentException("Value can not be empty");
-            var newUserID = await userRepository.CreateUser(user);
-
-            return newUserID;
+                throw new ArgumentNullException("Value can not be empty");
+          
+            return await userRepository.GetUserByNameAndPassword(message);
         }
     }
 }

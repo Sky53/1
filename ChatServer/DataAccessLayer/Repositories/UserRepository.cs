@@ -12,34 +12,14 @@ namespace ChatServer.DataAccessLayer.Repositories
     public class UserRepository
     {
         private ChatContext _chatContext { get; set; } = new ChatContext();
-        public async Task<User> CreateUser(User user)
-        {
-            try
-            {
-                await _chatContext.Users.AddAsync(user);
-                await _chatContext.SaveChangesAsync();
-            }
-            catch (Exception exc)
-            {
-                Console.WriteLine(exc.Message);
-            }
-            return user;
-        }
-
-        public async Task DeleteUser(User user)
-        {
-            _chatContext.Users.Remove(user);
-            await _chatContext.SaveChangesAsync();
-        }
 
         public async Task<UserDTO> GetUserByNameAndPassword(Message<AuthMessage> authorizationMessage)
         {
             try
             {
-                var user = _chatContext.Users
+                var user = await _chatContext.Users
                     .Include(i => i.Groups)
-                    .Where(w => w.Name == authorizationMessage.Body.Login && w.Pass == authorizationMessage.Body.Pass)
-                    .FirstOrDefault();
+                    .FirstOrDefaultAsync(w => w.Name == authorizationMessage.Body.Login && w.Pass == authorizationMessage.Body.Pass);
                 List<BaseMessage> meaasge = null;
                 if (user == null)
                 {
@@ -51,15 +31,11 @@ namespace ChatServer.DataAccessLayer.Repositories
                     if (userGroupId != authorizationMessage.GroupId)
                     {
                         var oldGroup = _chatContext.Groups.Find(userGroupId);
-
                         if (oldGroup != null)
                             user.Groups.Remove(oldGroup);
-
                         var newGroup = _chatContext.Groups.Find(authorizationMessage.GroupId);
-
                         if (newGroup != null)
                             user.Groups.Add(newGroup);
-
                         _chatContext.SaveChanges();
                     }
                 }
@@ -78,12 +54,6 @@ namespace ChatServer.DataAccessLayer.Repositories
                 Console.WriteLine();
                 throw;
             }
-        }
-
-        public async Task UpdateUser(User user)
-        {
-            _chatContext.Users.Update(user);
-            await _chatContext.SaveChangesAsync();
         }
     }
 }

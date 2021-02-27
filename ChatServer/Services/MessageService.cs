@@ -12,8 +12,6 @@ namespace ChatServer.Services
         {
             if (textMessage == null)
                 throw new ArgumentException("Value can not be empty");
-
-            textMessage.GroupId = textMessage.GroupId == 0 ? null : textMessage.GroupId;
             await messageRepository.CreateMessage(textMessage);
         }
     }

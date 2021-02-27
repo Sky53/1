@@ -18,26 +18,5 @@ namespace ChatServer.DataAccessLayer.Repositories
 
             return group.Id;
         }
-
-        public async Task<List<Group>> GetGroups()
-        {
-            var result = await _chatContext.Groups.ToListAsync();
-            await _chatContext.SaveChangesAsync();
-
-            return result;
-        }
-
-        public async Task<Group> GetGroupByID(long ID)
-        {
-            var result = _chatContext.Groups.Where(w => w.Id == ID).FirstOrDefault();
-
-            return result;
-        }
-
-        public async Task UpdateMessage(Group group)
-        {
-            _chatContext.Groups.Update(group);
-            await _chatContext.SaveChangesAsync();
-        }
     }
 }

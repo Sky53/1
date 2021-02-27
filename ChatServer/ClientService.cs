@@ -88,8 +88,7 @@ namespace ChatServer
         private async Task<UserDTO> AnalysFirstMessage(string msg)
         {
             var regMSG = JsonSerializer.Deserialize<Message<AuthMessage>>(msg);
-            var status = await server.AuthorizationUser(regMSG);
-            return status;
+            return await server.AuthorizationUser(regMSG); ;
         }
 
         private Message<TxtMessage> MessageTextParse(string msg)
@@ -109,8 +108,7 @@ namespace ChatServer
             }
             while (Stream.DataAvailable);
 
-            var message = builder.ToString();
-            return message;
+            return builder.ToString(); ;
         }
         protected internal void Close()
         {

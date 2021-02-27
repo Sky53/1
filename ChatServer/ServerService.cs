@@ -17,7 +17,6 @@ namespace ChatServer
     {
         static TcpListener tcpListener;
         List<ClientService> clients = new List<ClientService>();
-        private readonly GroupService groupService = new GroupService();
         private readonly MessageService messageService = new MessageService();
         private readonly UserService userService = new UserService();
         protected internal void AddConnection(ClientService clientObject)
@@ -81,21 +80,9 @@ namespace ChatServer
             };
         }
 
-        internal async Task<User> CreateUser(Message<AuthMessage> user)
-        {
-            var res = await userService.Create(new User
-            {
-                Name = user.Body.Login,
-                Pass = user.Body.Pass,
-            });
-
-            return res;
-        }
-
         internal async Task<UserDTO> AuthorizationUser(Message<AuthMessage> msg)
         {
-            var result = await userService.Auth(msg);
-            return result;
+            return await userService.Auth(msg); 
         }
 
         protected internal void BroadcastMessage(string message, string id, long? groupq = 0)
