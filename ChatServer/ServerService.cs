@@ -39,9 +39,8 @@ namespace ChatServer
                 while (true)
                 {
                     TcpClient tcpClient = tcpListener.AcceptTcpClient();
-
                     ClientService clientObject = new ClientService(tcpClient, this);
-                    Thread clientThread = new Thread(new ThreadStart(clientObject.Process));
+                    Thread clientThread = new Thread(clientObject.Process);
                     clientThread.Start();
                 }
             }
