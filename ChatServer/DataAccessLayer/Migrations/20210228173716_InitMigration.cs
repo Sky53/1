@@ -28,8 +28,7 @@ namespace ChatServer.DataAccessLayer.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: true),
-                    Pass = table.Column<string>(type: "text", nullable: true),
-                    BaseMessageId = table.Column<Guid>(type: "uuid", nullable: true)
+                    Pass = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -45,8 +44,7 @@ namespace ChatServer.DataAccessLayer.Migrations
                     Type = table.Column<int>(type: "integer", nullable: false),
                     Body = table.Column<string>(type: "text", nullable: true),
                     GroupId = table.Column<long>(type: "bigint", nullable: true),
-                    UserId = table.Column<long>(type: "bigint", nullable: false),
-                    UserId1 = table.Column<long>(type: "bigint", nullable: true)
+                    UserId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -58,11 +56,11 @@ namespace ChatServer.DataAccessLayer.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_BaseMessages_Users_UserId1",
-                        column: x => x.UserId1,
+                        name: "FK_BaseMessages_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -103,14 +101,14 @@ namespace ChatServer.DataAccessLayer.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "BaseMessageId", "Name", "Pass" },
+                columns: new[] { "Id", "Name", "Pass" },
                 values: new object[,]
                 {
-                    { 1L, null, "User1", "pass" },
-                    { 2L, null, "User2", "pass" },
-                    { 3L, null, "User3", "pass" },
-                    { 4L, null, "User4", "pass" },
-                    { 5L, null, "User5", "pass" }
+                    { 1L, "User1", "pass" },
+                    { 2L, "User2", "pass" },
+                    { 3L, "User3", "pass" },
+                    { 4L, "User4", "pass" },
+                    { 5L, "User5", "pass" }
                 });
 
             migrationBuilder.InsertData(
@@ -131,9 +129,9 @@ namespace ChatServer.DataAccessLayer.Migrations
                 column: "GroupId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BaseMessages_UserId1",
+                name: "IX_BaseMessages_UserId",
                 table: "BaseMessages",
-                column: "UserId1");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GroupUser_UsersId",
