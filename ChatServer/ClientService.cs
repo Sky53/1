@@ -28,7 +28,7 @@ namespace ChatServer
             Server = serverObject;
             serverObject.AddConnection(this);
             UserDTO = userDTO;
-            GroupId = userDTO.GroupId;
+            GroupId = (long)userDTO.GroupId;
         }
 
         public async void Process()
