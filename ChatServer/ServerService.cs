@@ -68,8 +68,8 @@ namespace ChatServer
                 userDTO =  AuthorizationUser(regObj).GetAwaiter().GetResult();
                 ClientService clientObject = new ClientService(tcpClient, this, userDTO);
                 Stream.Close();
-                Thread clientThread = new Thread(new ThreadStart(clientObject.Process));
-                clientThread.Start();
+                //Thread clientThread = new Thread(new ThreadStart(clientObject.Process));
+                //clientThread.Start();
             }
             catch (Exception exc)
             {
@@ -99,7 +99,7 @@ namespace ChatServer
             var user = JsonSerializer.Serialize(msq);
             byte[] data = Encoding.UTF8.GetBytes(user);
             var usr = clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
-            usr.groupId = (long)msq.GroupId;
+            usr.GroupId = (long)msq.GroupId;
             usr.Stream.Write(data, 0, data.Length);
         }
 
@@ -129,7 +129,7 @@ namespace ChatServer
 
         protected internal void BroadcastMessage(string message, string id, long? groupq = 0)
         {
-            var users = groupq == null ? clients : clients.Where(w => w.groupId == groupq).ToList();
+            var users = groupq == null ? clients : clients.Where(w => w.GroupId == groupq).ToList();
             byte[] data = Encoding.UTF8.GetBytes(message);
             for (int i = 0; i < users.Count; i++)
             {

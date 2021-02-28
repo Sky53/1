@@ -14,27 +14,28 @@ namespace ChatServer
     {
         protected internal string SessionId { get; private set; }
         protected internal NetworkStream Stream { get; private set; }
-        string userName;
+        string UserName;
         UserDTO UserDTO;
-        public long groupId = 0;
-        TcpClient client;
-        ServerService server;
+        public long GroupId = 0;
+        TcpClient Client;
+        ServerService Server;
         protected ChatContext ChatContext = new ChatContext();
 
         public ClientService(TcpClient tcpClient, ServerService serverObject, UserDTO userDTO)
         {
             SessionId = Guid.NewGuid().ToString();
-            client = tcpClient;
-            server = serverObject;
+            Client = tcpClient;
+            Server = serverObject;
             serverObject.AddConnection(this);
             UserDTO = userDTO;
+            GroupId = userDTO.GroupId;
         }
 
         public async void Process()
         {
             try
             {
-                Stream = client.GetStream();
+                Stream = Client.GetStream();
                 //var authMSG = GetMessage();
                 //var user = await AnalysFirstMessage(authMSG);
                 //if (user == null)
@@ -61,16 +62,16 @@ namespace ChatServer
                     {
                         var msg = GetMessage();
                         var objMsg = MessageTextParse(msg);
-                        await server.processingMessage(UserDTO, objMsg);
-                        msg = String.Format("{0}: {1}", userName, objMsg.Body.Text);
+                        await Server.processingMessage(UserDTO, objMsg);
+                        msg = String.Format("{0}: {1}", UserName, objMsg.Body.Text);
                         Console.WriteLine(msg);
-                        server.BroadcastMessage(msg, SessionId, objMsg.GroupId);
+                        Server.BroadcastMessage(msg, SessionId, objMsg.GroupId);
                     }
                     catch (Exception wxc)
                     {
-                        var msg = String.Format("{0}: покинул чат", userName);
+                        var msg = String.Format("{0}: покинул чат", UserName);
                         Console.WriteLine(msg);
-                        server.BroadcastMessage(msg, SessionId);
+                        Server.BroadcastMessage(msg, SessionId);
                         break;
                     }
                 }
@@ -81,7 +82,7 @@ namespace ChatServer
             }
             finally
             {
-                server.RemoveConnection(this.SessionId);
+                Server.RemoveConnection(this.SessionId);
                 Close();
             }
         }
@@ -89,7 +90,7 @@ namespace ChatServer
         private async Task<UserDTO> AnalysFirstMessage(string msg)
         {
             var regMSG = JsonSerializer.Deserialize<Message<AuthMessage>>(msg);
-            return await server.AuthorizationUser(regMSG); ;
+            return await Server.AuthorizationUser(regMSG); ;
         }
 
         private Message<TxtMessage> MessageTextParse(string msg)
@@ -115,8 +116,8 @@ namespace ChatServer
         {
             if (Stream != null)
                 Stream.Close();
-            if (client != null)
-                client.Close();
+            if (Client != null)
+                Client.Close();
         }
     }
 }
