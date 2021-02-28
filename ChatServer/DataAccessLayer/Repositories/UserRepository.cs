@@ -51,7 +51,7 @@ namespace ChatServer.DataAccessLayer.Repositories
             }
             catch (Exception wx)
             {
-                Console.WriteLine();
+                Console.WriteLine(wx.Message);
                 throw;
             }
         }

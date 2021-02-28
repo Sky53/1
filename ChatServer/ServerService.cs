@@ -39,10 +39,11 @@ namespace ChatServer
                 while (true)
                 {
                     TcpClient tcpClient = tcpListener.AcceptTcpClient();
-
-                    ClientService clientObject = new ClientService(tcpClient, this);
-                    Thread clientThread = new Thread(new ThreadStart(clientObject.Process));
-                    clientThread.Start();
+                    //var socket = tcpListener.AcceptSocket();
+                    AnalysisFirstMessage(tcpClient, null);
+                    //ClientService clientObject = new ClientService(tcpClient, this);
+                    //Thread clientThread = new Thread(new ThreadStart(clientObject.Process));
+                    //clientThread.Start();
                 }
             }
             catch (Exception ex)
@@ -50,6 +51,47 @@ namespace ChatServer
                 Console.WriteLine(ex.Message);
                 Disconnect();
             }
+        }
+
+        private async void AnalysisFirstMessage(TcpClient tcpClient, Socket socket)
+        {
+           var Stream = tcpClient.GetStream();
+            var authMSG = GetMessage(Stream);
+            if (string.IsNullOrEmpty(authMSG))
+            {
+                Console.WriteLine();
+            }
+            UserDTO userDTO = null;
+            try
+            {
+                var regObj = JsonSerializer.Deserialize<Message<AuthMessage>>(authMSG);
+                userDTO =  AuthorizationUser(regObj).GetAwaiter().GetResult();
+                ClientService clientObject = new ClientService(tcpClient, this, userDTO);
+                Stream.Close();
+                Thread clientThread = new Thread(new ThreadStart(clientObject.Process));
+                clientThread.Start();
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine(exc.Message);
+                Stream.Close();
+                tcpClient.Close();
+            }
+        }
+
+        private string GetMessage(NetworkStream stream)
+        {
+            byte[] data = new byte[512];
+            StringBuilder builder = new StringBuilder();
+            int bytes = 0;
+            do
+            {
+                bytes = stream.Read(data, 0, data.Length);
+                builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
+            }
+            while (stream.DataAvailable);
+
+            return builder.ToString(); ;
         }
 
         internal async Task SendUserData(Message<UserDTO> msq, string sessionId)

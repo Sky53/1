@@ -21,12 +21,13 @@ namespace ChatServer
         ServerService server;
         protected ChatContext ChatContext = new ChatContext();
 
-        public ClientService(TcpClient tcpClient, ServerService serverObject)
+        public ClientService(TcpClient tcpClient, ServerService serverObject, UserDTO userDTO)
         {
             SessionId = Guid.NewGuid().ToString();
             client = tcpClient;
             server = serverObject;
             serverObject.AddConnection(this);
+            UserDTO = userDTO;
         }
 
         public async void Process()
@@ -34,33 +35,33 @@ namespace ChatServer
             try
             {
                 Stream = client.GetStream();
-                var authMSG = GetMessage();
-                var user = await AnalysFirstMessage(authMSG);
-                if (user == null)
-                {
-                    server.SendError(SessionId);
-                    throw new ArgumentException();
-                }
-                UserDTO = user;
-                userName = user.Name;
-                string message = userName + " вошел в чат";
-                var userDTO = new Message<UserDTO>
-                {
-                    Loggin = user.Name,
-                    Type = 3,
-                    Body = user,
-                    GroupId = user.GroupId
-                };
-                await server.SendUserData(userDTO, SessionId);
-                server.BroadcastMessage(message, SessionId);
-                Console.WriteLine(message);
+                //var authMSG = GetMessage();
+                //var user = await AnalysFirstMessage(authMSG);
+                //if (user == null)
+                //{
+                //    server.SendError(SessionId);
+                //    throw new ArgumentException();
+                //}
+                //UserDTO = user;
+                //userName = user.Name;
+                //string message = userName + " вошел в чат";
+                //var userDTO = new Message<UserDTO>
+                //{
+                //    Loggin = user.Name,
+                //    Type = 3,
+                //    Body = user,
+                //    GroupId = user.GroupId
+                //};
+                //await server.SendUserData(userDTO, SessionId);
+                //server.BroadcastMessage(message, SessionId);
+                //Console.WriteLine(message);
                 while (true)
                 {
                     try
                     {
                         var msg = GetMessage();
                         var objMsg = MessageTextParse(msg);
-                        await server.processingMessage(user, objMsg);
+                        await server.processingMessage(UserDTO, objMsg);
                         msg = String.Format("{0}: {1}", userName, objMsg.Body.Text);
                         Console.WriteLine(msg);
                         server.BroadcastMessage(msg, SessionId, objMsg.GroupId);
