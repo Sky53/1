@@ -18,10 +18,10 @@ namespace ChatServer
         UserDTO UserDTO;
         public long groupId = 0;
         TcpClient client;
-        ServerService server;
+        Server server;
         protected ChatContext ChatContext = new ChatContext();
 
-        public ClientService(TcpClient tcpClient, ServerService serverObject)
+        public ClientService(TcpClient tcpClient, Server serverObject)
         {
             SessionId = Guid.NewGuid().ToString();
             client = tcpClient;

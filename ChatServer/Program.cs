@@ -6,14 +6,13 @@ namespace ChatServer
 {
     class Program
     {
-        static ServerService server; 
-        static Thread listenThread; 
+
         static void Main(string[] args)
         {
+            var server = new Server();
             try
             {
-                server = new ServerService();
-                listenThread = new Thread(server.Listen);
+                var listenThread = new Thread(server.Listen);
                 listenThread.Start();
             }
             catch (Exception ex)

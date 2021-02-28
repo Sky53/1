@@ -13,32 +13,32 @@ using System.Threading.Tasks;
 
 namespace ChatServer
 {
-    public class ServerService
+    public class Server
     {
-        static TcpListener tcpListener;
-        List<ClientService> clients = new List<ClientService>();
-        private readonly MessageService messageService = new MessageService();
-        private readonly UserService userService = new UserService();
+        private static TcpListener TCPListener;
+        List<ClientService> Clients = new List<ClientService>();
+        private readonly MessageService MessageService = new MessageService();
+        private readonly UserService UserService = new UserService();
         protected internal void AddConnection(ClientService clientObject)
         {
-            clients.Add(clientObject);
+            Clients.Add(clientObject);
         }
         protected internal void RemoveConnection(string sessionId)
         {
-            ClientService client = clients.FirstOrDefault(c => c.SessionId == sessionId);
+            ClientService client = Clients.FirstOrDefault(c => c.SessionId == sessionId);
             if (client != null)
-                clients.Remove(client);
+                Clients.Remove(client);
         }
         protected internal void Listen()
         {
             try
             {
-                tcpListener = new TcpListener(IPAddress.Any, 1313);
-                tcpListener.Start();
+                TCPListener = new TcpListener(IPAddress.Any, 1313);
+                TCPListener.Start();
                 Console.WriteLine("Сервер запущен. Ожидание подключений...");
                 while (true)
                 {
-                    TcpClient tcpClient = tcpListener.AcceptTcpClient();
+                    TcpClient tcpClient = TCPListener.AcceptTcpClient();
                     ClientService clientObject = new ClientService(tcpClient, this);
                     Thread clientThread = new Thread(clientObject.Process);
                     clientThread.Start();
@@ -55,7 +55,7 @@ namespace ChatServer
         {
             var user = JsonSerializer.Serialize(msq);
             byte[] data = Encoding.UTF8.GetBytes(user);
-            var usr = clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
+            var usr = Clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
             usr.groupId = (long)msq.GroupId;
             usr.Stream.Write(data, 0, data.Length);
         }
@@ -64,7 +64,7 @@ namespace ChatServer
         {
             objMsg.UserId = user.Id;
             BaseMessage message = ParseMessage(objMsg);
-            await messageService.Send(message);
+            await MessageService.Send(message);
         }
 
         private BaseMessage ParseMessage(Message<TxtMessage> objMsg)
@@ -81,12 +81,12 @@ namespace ChatServer
 
         internal async Task<UserDTO> AuthorizationUser(Message<AuthMessage> msg)
         {
-            return await userService.Auth(msg); 
+            return await UserService.Auth(msg); 
         }
 
         protected internal void BroadcastMessage(string message, string id, long? groupq = 0)
         {
-            var users = groupq == null ? clients : clients.Where(w => w.groupId == groupq).ToList();
+            var users = groupq == null ? Clients : Clients.Where(w => w.groupId == groupq).ToList();
             byte[] data = Encoding.UTF8.GetBytes(message);
             for (int i = 0; i < users.Count; i++)
             {
@@ -101,16 +101,16 @@ namespace ChatServer
         {
             var response = "Exit";
             byte[] data = Encoding.UTF8.GetBytes(response);
-            var user = clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
+            var user = Clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
             user.Stream.Write(data, 0, data.Length);
         }
         protected internal void Disconnect()
         {
-            tcpListener.Stop();
+            TCPListener.Stop();
 
-            for (int i = 0; i < clients.Count; i++)
+            for (int i = 0; i < Clients.Count; i++)
             {
-                clients[i].Close();
+                Clients[i].Close();
             }
             Environment.Exit(0);
         }
