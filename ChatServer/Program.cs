@@ -13,6 +13,7 @@ namespace ChatServer
             try
             {
                 var listenThread = new Thread(server.Listen);
+                var ReciveThred = new Thread(server.Listen);
                 listenThread.Start();
             }
             catch (Exception ex)

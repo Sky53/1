@@ -16,16 +16,16 @@ namespace ChatServer
     public class Server
     {
         private static TcpListener TCPListener;
-        List<ClientService> Clients = new List<ClientService>();
+        List<Client> Clients = new List<Client>();
         private readonly MessageService MessageService = new MessageService();
         private readonly UserService UserService = new UserService();
-        protected internal void AddConnection(ClientService clientObject)
+        protected internal void AddConnection(Client clientObject)
         {
             Clients.Add(clientObject);
         }
         protected internal void RemoveConnection(string sessionId)
         {
-            ClientService client = Clients.FirstOrDefault(c => c.SessionId == sessionId);
+            Client client = Clients.FirstOrDefault(c => c.SessionId == sessionId);
             if (client != null)
                 Clients.Remove(client);
         }
@@ -39,9 +39,19 @@ namespace ChatServer
                 while (true)
                 {
                     TcpClient tcpClient = TCPListener.AcceptTcpClient();
-                    ClientService clientObject = new ClientService(tcpClient, this);
-                    Thread clientThread = new Thread(clientObject.Process);
-                    clientThread.Start();
+                    Client client = new Client(tcpClient, this);
+                    var firstMessage = GetMessage(client);
+                    var userDTO =  AnalysFirstMessage(firstMessage).GetAwaiter().GetResult();
+                    var response = new Message<UserDTO>
+                    {
+                        Loggin = userDTO.Name,
+                        Type = 3,
+                        Body = userDTO,
+                        GroupId = userDTO.GroupId
+                    };
+                    SendUserData(response, client.SessionId).GetAwaiter().GetResult();
+                    //Thread clientThread = new Thread(clientObject.Process);
+                    //clientThread.Start();
                 }
             }
             catch (Exception ex)
@@ -49,6 +59,55 @@ namespace ChatServer
                 Console.WriteLine(ex.Message);
                 Disconnect();
             }
+        }
+
+        private Message<TxtMessage> MessageTextParse(string msg)
+        {
+            return JsonSerializer.Deserialize<Message<TxtMessage>>(msg);
+        }
+
+        public async void Process()
+        {
+            while (true)
+            {
+                try
+                {
+                    foreach (var item in Clients)
+                    {
+                        var message = GetMessage(item);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                finally
+                {
+                    server.RemoveConnection(this.SessionId);
+                    Close();
+                }
+            }
+
+        }
+
+        private string GetMessage(Client client)
+        {
+            byte[] data = new byte[512];
+            StringBuilder builder = new StringBuilder();
+            int bytes = 0;
+            do
+            {
+                bytes = client.Stream.Read(data, 0, data.Length);
+                builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
+            }
+            while (client.Stream.DataAvailable);
+            return builder.ToString(); ;
+        }
+
+        private async Task<UserDTO> AnalysFirstMessage(string msg)
+        {
+            var regMSG = JsonSerializer.Deserialize<Message<AuthMessage>>(msg);
+            return await AuthorizationUser(regMSG); ;
         }
 
         internal async Task SendUserData(Message<UserDTO> msq, string sessionId)

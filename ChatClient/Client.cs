@@ -29,9 +29,11 @@ namespace ChatClient
             {
                 client.Connect(host, port);
                 stream = client.GetStream();
+                //Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
+                //receiveThread.Start();
+                SendRegMessage(userName, password, group: int.Parse(group));
                 Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
                 receiveThread.Start();
-                SendRegMessage(userName, password, group: int.Parse(group));
                 SendMessage();
             }
             catch (Exception ex)
@@ -67,6 +69,7 @@ namespace ChatClient
                 Type = 2,
                 Body = new TxtMessage { Text = text },
                 CreateDate = DateTime.Now,
+                UserId = User.Id
             };
             string json = JsonSerializer.Serialize(message);
 
@@ -90,7 +93,11 @@ namespace ChatClient
                     while (stream.DataAvailable);
 
                     string message = builder.ToString();
-                    AnalysisMessage(message);
+                    if (message != null)
+                    {
+                        AnalysisMessage(message);
+                    }
+                   
 
                 }
                 catch (Exception e)
