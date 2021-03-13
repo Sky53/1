@@ -58,20 +58,16 @@ namespace ChatServer
                 {
                     foreach (var client in Clients.ToList())//Concurrent for the poor
                     {
-                        Thread.Sleep(10);
+                        //Thread.Sleep(10);
                         try
                         {
                             var msg = GetMessage(client);
                             if (client.UserDTO == null)
                             {
                                 var user = await AnalysFirstMessage(msg);
-                                if (user == null)
-                                {
-                                    SendError(client.SessionId);
-                                    throw new ArgumentException();
-                                }
                                 client.UserDTO = user;
                                 client.userName = user.Name;
+                                client.GroupId = (long)user.GroupId;
                                 string message = client.userName + " вошел в чат";
                                 var userDTO = new Message<UserDTO>
                                 {
@@ -94,6 +90,10 @@ namespace ChatServer
                             }
                         }
                         catch (ArgumentNullException exc) { }
+                        catch (ArgumentException exc)
+                        {
+                            SendError(client.SessionId);
+                        }
                     }
                 }
             }
@@ -127,16 +127,16 @@ namespace ChatServer
             return await AuthorizationUser(regMSG); ;
         }
 
-        internal async Task SendUserData(Message<UserDTO> msq, string sessionId)
+        private async Task SendUserData(Message<UserDTO> msq, string sessionId)
         {
             var user = JsonSerializer.Serialize(msq);
             byte[] data = Encoding.UTF8.GetBytes(user);
             var usr = Clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
-            usr.groupId = (long)msq.GroupId;
+            usr.GroupId = (long)msq.GroupId;
             usr.Stream.Write(data, 0, data.Length);
         }
 
-        internal async Task ProcessingMessage(UserDTO user, Message<TxtMessage> objMsg)
+        private async Task ProcessingMessage(UserDTO user, Message<TxtMessage> objMsg)
         {
             objMsg.UserId = user.Id;
             BaseMessage message = ParseMessage(objMsg);
@@ -155,14 +155,14 @@ namespace ChatServer
             };
         }
 
-        internal async Task<UserDTO> AuthorizationUser(Message<AuthMessage> msg)
+        private async Task<UserDTO> AuthorizationUser(Message<AuthMessage> msg)
         {
-            return await UserService.Auth(msg); 
+            return await UserService.Auth(msg);
         }
 
-        protected internal void BroadcastMessage(string message, string id, long? groupq = 0)
+        private void BroadcastMessage(string message, string id, long? groupq = 0)
         {
-            var users = groupq == null ? Clients : Clients.Where(w => w.groupId == groupq).ToList();
+            var users = groupq == null ? Clients : Clients.Where(w => w.GroupId == groupq).ToList();
             byte[] data = Encoding.UTF8.GetBytes(message);
             for (int i = 0; i < users.Count; i++)
             {
@@ -173,7 +173,7 @@ namespace ChatServer
             }
         }
 
-        internal void SendError(string sessionId)
+        private void SendError(string sessionId)
         {
             var response = "Exit";
             byte[] data = Encoding.UTF8.GetBytes(response);

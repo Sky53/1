@@ -23,7 +23,7 @@ namespace ChatServer.DataAccessLayer.Repositories
                 List<BaseMessage> meaasge = null;
                 if (user == null)
                 {
-                    throw new Exception("Not found");
+                    throw new ArgumentException("Not found");
                 }
                 var userGroupId = user.Groups.FirstOrDefault()?.Id;
                 if (userGroupId != 0)

@@ -29,8 +29,6 @@ namespace ChatClient
             {
                 client.Connect(host, port);
                 Stream = client.GetStream();
-                //Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
-                //receiveThread.Start();
                 SendRegMessage(userName, password, group: int.Parse(group));
                 Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
                 receiveThread.Start();
