@@ -95,6 +95,15 @@ namespace ChatServer
                             Clients.Remove(client);
                             client.Close();
                         }
+                        catch (Exception wxc)
+                        {
+                            var msg = String.Format("{0}: покинул чат", client.userName);
+                            Console.WriteLine(msg);
+                            BroadcastMessage(msg, client.SessionId);
+                            Clients.Remove(client);
+                            client.Close();
+                            break;
+                        }
                     }
                 }
             }
