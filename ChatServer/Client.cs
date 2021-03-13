@@ -14,8 +14,8 @@ namespace ChatServer
     {
         protected internal string SessionId { get; private set; }
         protected internal NetworkStream Stream { get; private set; }
-        string userName;
-        UserDTO UserDTO;
+        public string userName;
+        public UserDTO UserDTO;
         public long groupId = 0;
         TcpClient client;
         Server server;
@@ -43,37 +43,16 @@ namespace ChatServer
         {
             try
             {
-                
-                //var authMSG = GetMessage();
-                //var user = await AnalysFirstMessage(authMSG);
-                //if (user == null)
-                //{
-                //    server.SendError(SessionId);
-                //    throw new ArgumentException();
-                //}
-                //UserDTO = user;
-                //userName = user.Name;
-                //string message = userName + " вошел в чат";
-                //var userDTO = new Message<UserDTO>
-                //{
-                //    Loggin = user.Name,
-                //    Type = 3,
-                //    Body = user,
-                //    GroupId = user.GroupId
-                //};
-                //await server.SendUserData(userDTO, SessionId);
-                //server.BroadcastMessage(message, SessionId);
-                //Console.WriteLine(message);
                 while (true)
                 {
                     try
                     {
                         var msg = GetMessage();
-                        var objMsg = MessageTextParse(msg);
-                        await server.processingMessage(UserDTO, objMsg);
-                        msg = String.Format("{0}: {1}", userName, objMsg.Body.Text);
-                        Console.WriteLine(msg);
-                        server.BroadcastMessage(msg, SessionId, objMsg.GroupId);
+                        //var objMsg = MessageTextParse(msg);
+                        //await server.processingMessage(UserDTO, objMsg);
+                        //msg = String.Format("{0}: {1}", userName, objMsg.Body.Text);
+                        //Console.WriteLine(msg);
+                        //server.BroadcastMessage(msg, SessionId, objMsg.GroupId);
                     }
                     catch (Exception wxc)
                     {

@@ -2,6 +2,7 @@
 using ChatServer.DTO;
 using ChatServer.Services;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -40,18 +41,6 @@ namespace ChatServer
                 {
                     TcpClient tcpClient = TCPListener.AcceptTcpClient();
                     Client client = new Client(tcpClient, this);
-                    var firstMessage = GetMessage(client);
-                    var userDTO =  AnalysFirstMessage(firstMessage).GetAwaiter().GetResult();
-                    var response = new Message<UserDTO>
-                    {
-                        Loggin = userDTO.Name,
-                        Type = 3,
-                        Body = userDTO,
-                        GroupId = userDTO.GroupId
-                    };
-                    SendUserData(response, client.SessionId).GetAwaiter().GetResult();
-                    //Thread clientThread = new Thread(clientObject.Process);
-                    //clientThread.Start();
                 }
             }
             catch (Exception ex)
@@ -61,47 +50,75 @@ namespace ChatServer
             }
         }
 
+        public async void ReceivingMessage()
+        {
+            while (true)
+            {
+                if (Clients.Count != 0)
+                {
+                    foreach (var client in Clients.ToList())//Concurrent for the poor
+                    {
+                        Thread.Sleep(10);
+                        try
+                        {
+                            var msg = GetMessage(client);
+                            if (client.UserDTO == null)
+                            {
+                                var user = await AnalysFirstMessage(msg);
+                                if (user == null)
+                                {
+                                    SendError(client.SessionId);
+                                    throw new ArgumentException();
+                                }
+                                client.UserDTO = user;
+                                client.userName = user.Name;
+                                string message = client.userName + " вошел в чат";
+                                var userDTO = new Message<UserDTO>
+                                {
+                                    Loggin = user.Name,
+                                    Type = 3,
+                                    Body = user,
+                                    GroupId = user.GroupId
+                                };
+                                await SendUserData(userDTO, client.SessionId);
+                                BroadcastMessage(message, client.SessionId);
+                                Console.WriteLine(message);
+                            }
+                            else
+                            {
+                                var objMsg = MessageTextParse(msg);
+                                await ProcessingMessage(client.UserDTO, objMsg);
+                                msg = String.Format("{0}: {1}", client.userName, objMsg.Body.Text);
+                                Console.WriteLine(msg);
+                                BroadcastMessage(msg, client.SessionId, objMsg.GroupId);
+                            }
+                        }
+                        catch (ArgumentNullException exc) { }
+                    }
+                }
+            }
+        }
         private Message<TxtMessage> MessageTextParse(string msg)
         {
             return JsonSerializer.Deserialize<Message<TxtMessage>>(msg);
         }
 
-        public async void Process()
-        {
-            while (true)
-            {
-                try
-                {
-                    foreach (var item in Clients)
-                    {
-                        var message = GetMessage(item);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
-                finally
-                {
-                    server.RemoveConnection(this.SessionId);
-                    Close();
-                }
-            }
-
-        }
-
         private string GetMessage(Client client)
         {
-            byte[] data = new byte[512];
-            StringBuilder builder = new StringBuilder();
-            int bytes = 0;
-            do
+            if (client.Stream.DataAvailable)
             {
-                bytes = client.Stream.Read(data, 0, data.Length);
-                builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
+                byte[] data = new byte[512];
+                StringBuilder builder = new StringBuilder();
+                int bytes = 0;
+                do
+                {
+                    bytes = client.Stream.Read(data, 0, data.Length);
+                    builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
+                }
+                while (client.Stream.DataAvailable);
+                return builder.ToString(); ;
             }
-            while (client.Stream.DataAvailable);
-            return builder.ToString(); ;
+            throw new ArgumentNullException();
         }
 
         private async Task<UserDTO> AnalysFirstMessage(string msg)
@@ -119,7 +136,7 @@ namespace ChatServer
             usr.Stream.Write(data, 0, data.Length);
         }
 
-        internal async Task processingMessage(UserDTO user, Message<TxtMessage> objMsg)
+        internal async Task ProcessingMessage(UserDTO user, Message<TxtMessage> objMsg)
         {
             objMsg.UserId = user.Id;
             BaseMessage message = ParseMessage(objMsg);

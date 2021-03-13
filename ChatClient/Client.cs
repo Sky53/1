@@ -14,7 +14,7 @@ namespace ChatClient
         private const string host = "127.0.0.1";
         private const int port = 1313;
         static TcpClient client;
-        static NetworkStream stream;
+        static NetworkStream Stream;
 
         static void Main(string[] args)
         {
@@ -28,7 +28,7 @@ namespace ChatClient
             try
             {
                 client.Connect(host, port);
-                stream = client.GetStream();
+                Stream = client.GetStream();
                 //Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
                 //receiveThread.Start();
                 SendRegMessage(userName, password, group: int.Parse(group));
@@ -51,7 +51,7 @@ namespace ChatClient
             {
                 string Message = MakeMessage();
                 byte[] data = Encoding.UTF8.GetBytes(Message);
-                stream.Write(data, 0, data.Length);
+                Stream.Write(data, 0, data.Length);
             }
         }
 
@@ -87,10 +87,10 @@ namespace ChatClient
                     int bytes = 0;
                     do
                     {
-                        bytes = stream.Read(data, 0, data.Length);
+                        bytes = Stream.Read(data, 0, data.Length);
                         builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
                     }
-                    while (stream.DataAvailable);
+                    while (Stream.DataAvailable);
 
                     string message = builder.ToString();
                     if (message != null)
@@ -139,13 +139,13 @@ namespace ChatClient
             var regOrAuthMessage = ClientHelper.GetRegOrAuthMessage(userName, password, groupID: group);
             string json = JsonSerializer.Serialize(regOrAuthMessage);
             byte[] authData = Encoding.UTF8.GetBytes(json);
-            stream.Write(authData, 0, authData.Length);
+            Stream.Write(authData, 0, authData.Length);
         }
 
         static void Disconnect()
         {
-            if (stream != null)
-                stream.Close();
+            if (Stream != null)
+                Stream.Close();
             if (client != null)
                 client.Close();
             Environment.Exit(0);
