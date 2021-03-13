@@ -58,7 +58,6 @@ namespace ChatServer
                 {
                     foreach (var client in Clients.ToList())//Concurrent for the poor
                     {
-                        //Thread.Sleep(10);
                         try
                         {
                             var msg = GetMessage(client);
@@ -93,6 +92,8 @@ namespace ChatServer
                         catch (ArgumentException exc)
                         {
                             SendError(client.SessionId);
+                            Clients.Remove(client);
+                            client.Close();
                         }
                     }
                 }

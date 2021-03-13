@@ -13,10 +13,10 @@ namespace ChatServer
             try
             {
                 var listenThread = new Thread(server.Listen);
-                var ReciveThred = new Thread(server.ReceivingMessage);
-                ReciveThred.IsBackground = true;
+                var reciveThred = new Thread(server.ReceivingMessage);
+                reciveThred.IsBackground = true;
                 listenThread.Start();
-                ReciveThred.Start();
+                reciveThred.Start();
             }
             catch (Exception ex)
             {
