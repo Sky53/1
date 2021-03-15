@@ -14,25 +14,25 @@ namespace ChatServer
     {
         protected internal string SessionId { get; private set; }
         protected internal NetworkStream Stream { get; private set; }
-        public string userName;
+        public string UserName;
         public UserDTO UserDTO;
         public long GroupId = 0;
-        TcpClient client;
+        TcpClient TCPClient;
 
         public Client(TcpClient tcpClient, Server serverObject)
         {
             SessionId = Guid.NewGuid().ToString();
-            client = tcpClient;
+            TCPClient = tcpClient;
             serverObject.AddConnection(this);
-            Stream = client.GetStream();
+            Stream = TCPClient.GetStream();
         }
 
         protected internal void Close()
         {
             if (Stream != null)
                 Stream.Close();
-            if (client != null)
-                client.Close();
+            if (TCPClient != null)
+                TCPClient.Close();
         }
     }
 }

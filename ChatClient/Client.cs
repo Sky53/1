@@ -9,27 +9,27 @@ namespace ChatClient
 {
     class Client
     {
-        static string userName;
+        static string UserName;
         public static UserDTO User = null;
-        private const string host = "127.0.0.1";
-        private const int port = 1313;
-        static TcpClient client;
+        private const string Host = "127.0.0.1";
+        private const int Port = 1313;
+        static TcpClient CurrentClient;
         static NetworkStream Stream;
 
         static void Main(string[] args)
         {
             Console.Write("Введите свое имя: ");
-            userName = Console.ReadLine();
+            UserName = Console.ReadLine();
             Console.Write("Введите свой пароль: ");
             var password = Console.ReadLine();
             Console.Write("Выберите ID своей группы: ");
             var group = Console.ReadLine();
-            client = new TcpClient();
+            CurrentClient = new TcpClient();
             try
             {
-                client.Connect(host, port);
-                Stream = client.GetStream();
-                SendRegMessage(userName, password, group: int.Parse(group));
+                CurrentClient.Connect(Host, Port);
+                Stream = CurrentClient.GetStream();
+                SendRegMessage(UserName, password, group: int.Parse(group));
                 Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
                 receiveThread.Start();
                 SendMessage();
@@ -63,7 +63,7 @@ namespace ChatClient
             var message = new Message<TxtMessage>
             {
                 GroupId = forAll ? null : User.GroupId,
-                Loggin = userName,
+                Loggin = UserName,
                 Type = 2,
                 Body = new TxtMessage { Text = text },
                 CreateDate = DateTime.Now,
@@ -144,8 +144,8 @@ namespace ChatClient
         {
             if (Stream != null)
                 Stream.Close();
-            if (client != null)
-                client.Close();
+            if (CurrentClient != null)
+                CurrentClient.Close();
             Environment.Exit(0);
         }
     }

@@ -65,9 +65,9 @@ namespace ChatServer
                             {
                                 var user = await AnalysFirstMessage(msg);
                                 client.UserDTO = user;
-                                client.userName = user.Name;
+                                client.UserName = user.Name;
                                 client.GroupId = (long)user.GroupId;
-                                string message = client.userName + " вошел в чат";
+                                string message = client.UserName + " вошел в чат";
                                 var userDTO = new Message<UserDTO>
                                 {
                                     Loggin = user.Name,
@@ -83,7 +83,7 @@ namespace ChatServer
                             {
                                 var objMsg = MessageTextParse(msg);
                                 await ProcessingMessage(client.UserDTO, objMsg);
-                                msg = String.Format("{0}: {1}", client.userName, objMsg.Body.Text);
+                                msg = String.Format("{0}: {1}", client.UserName, objMsg.Body.Text);
                                 Console.WriteLine(msg);
                                 BroadcastMessage(msg, client.SessionId, objMsg.GroupId);
                             }
@@ -94,15 +94,16 @@ namespace ChatServer
                             SendError(client.SessionId);
                             Clients.Remove(client);
                             client.Close();
+                             continue;
                         }
-                        catch (Exception wxc)
+                        catch (Exception exc)
                         {
-                            var msg = String.Format("{0}: покинул чат", client.userName);
+                            var msg = String.Format("{0}: покинул чат", client.UserName);
                             Console.WriteLine(msg);
                             BroadcastMessage(msg, client.SessionId);
                             Clients.Remove(client);
                             client.Close();
-                            break;
+                            continue;
                         }
                     }
                 }
@@ -185,15 +186,13 @@ namespace ChatServer
 
         private void SendError(string sessionId)
         {
-            var response = "Exit";
-            byte[] data = Encoding.UTF8.GetBytes(response);
+            byte[] data = Encoding.UTF8.GetBytes("Exit");
             var user = Clients.Where(w => w.SessionId == sessionId).FirstOrDefault();
             user.Stream.Write(data, 0, data.Length);
         }
         protected internal void Disconnect()
         {
             TCPListener.Stop();
-
             for (int i = 0; i < Clients.Count; i++)
             {
                 Clients[i].Close();
