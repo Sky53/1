@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ChatServer.DTO
 {
-    public class UserDTO
+    public class UserDto
     {
         public long Id { get; set; }
         public string Name { get; set; }

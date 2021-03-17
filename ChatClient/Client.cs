@@ -10,7 +10,7 @@ namespace ChatClient
     class Client
     {
         static string UserName;
-        public static UserDTO User = null;
+        public static UserDto User = null;
         private const string Host = "127.0.0.1";
         private const int Port = 1313;
         static TcpClient CurrentClient;
@@ -63,7 +63,7 @@ namespace ChatClient
             var message = new Message<TxtMessage>
             {
                 GroupId = forAll ? null : User.GroupId,
-                Loggin = UserName,
+                Login = UserName,
                 Type = 2,
                 Body = new TxtMessage { Text = text },
                 CreateDate = DateTime.Now,
@@ -115,7 +115,7 @@ namespace ChatClient
             }
             if (message.Contains("\"Type\":3"))
             {
-                var user = JsonSerializer.Deserialize<Message<UserDTO>>(message);
+                var user = JsonSerializer.Deserialize<Message<UserDto>>(message);
                 User = user.Body;
                 Console.WriteLine($"Welcome {User.Name}");
                 if (user.Body.Messages != null )

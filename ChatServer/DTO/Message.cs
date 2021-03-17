@@ -6,7 +6,7 @@ namespace ChatServer.DTO
 {
     public class Message<T>
     {
-        public string Loggin { get; set; }
+        public string Login { get; set; }
         public long UserId { get; set; }
         public DateTime CreateDate { get; set; }
         public int Type { get; set; }

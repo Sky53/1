@@ -8,13 +8,13 @@ namespace ChatServer.Services
 {
     public class UserService
     {
-        private readonly UserRepository userRepository = new UserRepository();
-        public async Task<UserDTO> Auth(Message<AuthMessage> message)
+        private readonly UserRepository _userRepository = new UserRepository();
+        public async Task<UserDto> Auth(Message<AuthMessage> message)
         {
             if (message == null)
-                throw new ArgumentNullException("Value can not be empty");
+                throw new ArgumentNullException(nameof(message));
           
-            return await userRepository.GetUserByNameAndPassword(message);
+            return await _userRepository.GetUserByNameAndPassword(message);
         }
     }
 }
