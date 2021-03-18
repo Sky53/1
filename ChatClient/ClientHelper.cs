@@ -7,9 +7,9 @@ namespace ChatClient
 {
     public class ClientHelper
     {
-        public static Message<AuthMessage> GetRegOrAuthMessage(string userName, string password, int groupID = 0)
+        public static Message<AuthMessage> GetRegOrAuthMessage(string userName, string password, int groupId = 0)
         {
-            return new Message<AuthMessage> { Body = new AuthMessage { Pass = password, Login = userName  }, GroupId = groupID, Type = 1 };
+            return new Message<AuthMessage> { Body = new AuthMessage { Pass = password, Login = userName  }, GroupId = groupId, Type = 1 };
         }
     }
 }

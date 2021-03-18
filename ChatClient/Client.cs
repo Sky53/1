@@ -9,27 +9,27 @@ namespace ChatClient
 {
     class Client
     {
-        static string UserName;
+        private static string _userName;
         public static UserDto User = null;
         private const string Host = "127.0.0.1";
         private const int Port = 1313;
-        static TcpClient CurrentClient;
-        static NetworkStream Stream;
+        private static TcpClient _currentClient;
+        private static NetworkStream _stream;
 
         static void Main(string[] args)
         {
             Console.Write("Введите свое имя: ");
-            UserName = Console.ReadLine();
+            _userName = Console.ReadLine();
             Console.Write("Введите свой пароль: ");
             var password = Console.ReadLine();
             Console.Write("Выберите ID своей группы: ");
             var group = Console.ReadLine();
-            CurrentClient = new TcpClient();
+            _currentClient = new TcpClient();
             try
             {
-                CurrentClient.Connect(Host, Port);
-                Stream = CurrentClient.GetStream();
-                SendRegMessage(UserName, password, group: int.Parse(group));
+                _currentClient.Connect(Host, Port);
+                _stream = _currentClient.GetStream();
+                SendRegMessage(_userName, password, group: int.Parse(group));
                 Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
                 receiveThread.Start();
                 SendMessage();
@@ -49,7 +49,7 @@ namespace ChatClient
             {
                 string Message = MakeMessage();
                 byte[] data = Encoding.UTF8.GetBytes(Message);
-                Stream.Write(data, 0, data.Length);
+                _stream.Write(data, 0, data.Length);
             }
         }
 
@@ -63,7 +63,7 @@ namespace ChatClient
             var message = new Message<TxtMessage>
             {
                 GroupId = forAll ? null : User.GroupId,
-                Login = UserName,
+                Login = _userName,
                 Type = 2,
                 Body = new TxtMessage { Text = text },
                 CreateDate = DateTime.Now,
@@ -85,10 +85,10 @@ namespace ChatClient
                     int bytes = 0;
                     do
                     {
-                        bytes = Stream.Read(data, 0, data.Length);
+                        bytes = _stream.Read(data, 0, data.Length);
                         builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
                     }
-                    while (Stream.DataAvailable);
+                    while (_stream.DataAvailable);
 
                     string message = builder.ToString();
                     if (message != null)
@@ -134,18 +134,16 @@ namespace ChatClient
 
         private static void SendRegMessage(string userName, string password, bool isReg = false, int group = 0)
         {
-            var regOrAuthMessage = ClientHelper.GetRegOrAuthMessage(userName, password, groupID: group);
+            var regOrAuthMessage = ClientHelper.GetRegOrAuthMessage(userName, password, groupId: group);
             string json = JsonSerializer.Serialize(regOrAuthMessage);
             byte[] authData = Encoding.UTF8.GetBytes(json);
-            Stream.Write(authData, 0, authData.Length);
+            _stream.Write(authData, 0, authData.Length);
         }
 
         static void Disconnect()
         {
-            if (Stream != null)
-                Stream.Close();
-            if (CurrentClient != null)
-                CurrentClient.Close();
+            _stream?.Close();
+            _currentClient?.Close();
             Environment.Exit(0);
         }
     }

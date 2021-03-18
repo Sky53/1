@@ -10,7 +10,7 @@ namespace ChatServer.DataAccessLayer.Repositories
 {
     public class MessageRepository
     {
-        private ChatContext _chatContext { get; set; } = new ChatContext();
+        private readonly ChatContext _chatContext  = new ChatContext();
         public async Task<Guid> CreateMessage(BaseMessage message)
         {
             await _chatContext.BaseMessages.AddAsync(message);

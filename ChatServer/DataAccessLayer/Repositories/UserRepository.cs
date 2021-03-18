@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 {
     public class UserRepository
     {
-        private ChatContext _chatContext { get; set; } = new ChatContext();
+        private readonly ChatContext _chatContext  = new ChatContext();
 
         public async Task<UserDto> GetUserByNameAndPassword(Message<AuthMessage> authorizationMessage)
         {
@@ -26,8 +26,9 @@ using System.Threading.Tasks;
                 {
                     throw new UserNotFoundException("User not founded");
                 }
+                
                 var userGroupId = user.Groups.FirstOrDefault()?.Id;
-                if (userGroupId != 0)
+                if (userGroupId != null)
                 {
                     if (userGroupId != authorizationMessage.GroupId)
                     {
