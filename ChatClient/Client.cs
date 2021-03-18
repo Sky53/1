@@ -83,6 +83,7 @@ namespace ChatClient
                     byte[] data = new byte[512];
                     StringBuilder builder = new StringBuilder();
                     int bytes = 0;
+                   
                     do
                     {
                         bytes = _stream.Read(data, 0, data.Length);
@@ -118,6 +119,7 @@ namespace ChatClient
                 var user = JsonSerializer.Deserialize<Message<UserDto>>(message);
                 User = user.Body;
                 Console.WriteLine($"Welcome {User.Name}");
+                
                 if (user.Body.Messages != null )
                 {
                     foreach (var item in user.Body.Messages)
@@ -125,6 +127,7 @@ namespace ChatClient
                         Console.WriteLine(item);
                     }
                 }
+
             }
             else
             {

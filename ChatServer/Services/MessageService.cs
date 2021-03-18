@@ -11,7 +11,8 @@ namespace ChatServer.Services
         public async Task Send(BaseMessage textMessage)
         {
             if (textMessage == null)
-                throw new ArgumentException("Value text message can not be empty");
+                throw new ArgumentNullException(nameof(textMessage));
+           
             await _messageRepository.CreateMessage(textMessage);
         }
     }

@@ -1,4 +1,4 @@
-﻿﻿using ChatServer.DataAccessLayer.Model;
+﻿using ChatServer.DataAccessLayer.Model;
 using ChatServer.DTO;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
- using ChatServer.Exceptions;
+using ChatServer.Exceptions;
 
- namespace ChatServer.DataAccessLayer.Repositories
+namespace ChatServer.DataAccessLayer.Repositories
 {
     public class UserRepository
     {
-        private readonly ChatContext _chatContext  = new ChatContext();
+        private readonly ChatContext _chatContext = new ChatContext();
 
         public async Task<UserDto> GetUserByNameAndPassword(Message<AuthMessage> authorizationMessage)
         {
@@ -20,13 +20,14 @@ using System.Threading.Tasks;
             {
                 var user = await _chatContext.Users
                     .Include(i => i.Groups)
-                    .FirstOrDefaultAsync(w => w.Name == authorizationMessage.Body.Login && w.Pass == authorizationMessage.Body.Pass);
-               
+                    .FirstOrDefaultAsync(w =>
+                        w.Name == authorizationMessage.Body.Login && w.Pass == authorizationMessage.Body.Pass);
+
                 if (user == null)
                 {
                     throw new UserNotFoundException("User not founded");
                 }
-                
+
                 var userGroupId = user.Groups.FirstOrDefault()?.Id;
                 if (userGroupId != null)
                 {
@@ -41,17 +42,19 @@ using System.Threading.Tasks;
                         await _chatContext.SaveChangesAsync();
                     }
                 }
-                
+
                 var message = _chatContext.BaseMessages.Where(w => w.Type == 2 && w.UserId == user.Id).ToList();
+                
                 return new UserDto
                 {
                     Id = user.Id,
                     GroupId = user.Groups.FirstOrDefault()?.Id,
                     Name = user.Name,
-                    Messages = message.OrderByDescending(x => x.CreateDate).Skip(0).Take(10).Select(s => s.Body).ToList()
+                    Messages = message.OrderByDescending(x => x.CreateDate).Skip(0).Take(10).Select(s => s.Body)
+                        .ToList()
                 };
             }
-            catch 
+            catch
             {
                 throw;
             }

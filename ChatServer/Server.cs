@@ -34,6 +34,7 @@ namespace ChatServer
                     var client = new Client(tcpClient);
                     _clients.Add(client);
                 }
+
             }
             catch (Exception ex)
             {
@@ -46,10 +47,13 @@ namespace ChatServer
         {
             while (true)
             {
+
                 if (_clients.Count != 0)
                 {
+
                     foreach (var client in _clients.ToList()) //Concurrent for the poor
                     {
+
                         try
                         {
                             var msg = GetMessage(client);
@@ -77,12 +81,13 @@ namespace ChatServer
                             }
                             else
                             {
-                                var objMsg = MessageTextParse(msg);
-                                await ProcessingMessage(client.UserDto, objMsg);
-                                msg = $"{client.UserName}: {objMsg.Body.Text}";
+                                var receivedMessage = MessageTextParse(msg);
+                                await ProcessingMessage(client.UserDto, receivedMessage);
+                                msg = $"{client.UserName}: {receivedMessage.Body.Text}";
                                 Console.WriteLine(msg);
-                                BroadcastMessage(msg, client.SessionId, objMsg.GroupId);
+                                BroadcastMessage(msg, client.SessionId, receivedMessage.GroupId);
                             }
+
                         }
                         catch (UserNotFoundException exc)
                         {
@@ -107,8 +112,11 @@ namespace ChatServer
                             client.Close();
                             continue;
                         }
+
                     }
+
                 }
+
             }
         }
 
@@ -121,9 +129,11 @@ namespace ChatServer
         {
             if (!client.Stream.DataAvailable)
                 return null;
+
             var data = new byte[512];
             var builder = new StringBuilder();
             var bytes = 0;
+           
             do
             {
                 bytes = client.Stream.Read(data, 0, data.Length);
@@ -138,7 +148,6 @@ namespace ChatServer
             var regMsg = JsonSerializer.Deserialize<Message<AuthMessage>>(msg);
 
             return await AuthorizationUser(regMsg);
-            ;
         }
 
         private async Task SendUserData(Message<UserDto> msg, string sessionId)
@@ -150,10 +159,10 @@ namespace ChatServer
             await client.Stream.WriteAsync(userDataDtoBytes, 0, userDataDtoBytes.Length);
         }
 
-        private async Task ProcessingMessage(UserDto user, Message<TxtMessage> objMsg)
+        private async Task ProcessingMessage(UserDto user, Message<TxtMessage> receivedMessage)
         {
-            objMsg.UserId = user.Id;
-            BaseMessage message = ParseMessage(objMsg);
+            receivedMessage.UserId = user.Id;
+            BaseMessage message = ParseMessage(receivedMessage);
             await _messageService.Send(message);
         }
 
