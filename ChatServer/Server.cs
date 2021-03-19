@@ -65,37 +65,26 @@ namespace ChatServer
 
                         if (client.UserDto == null)
                         {
-                            // TODO: To new method!!!
-                            var user = await AnalyseFirstMessage(messageFromClient);
-                            client.UserDto = user;
-                            client.UserName = user.Name;
-                            client.GroupId = (long) user.GroupId;
-                            var message = client.UserName + " вошел в чат";
-                            var userDto = new Message<UserDto>
-                            {
-                                Login = user.Name,
-                                Type = 3,
-                                Body = user,
-                                GroupId = user.GroupId
-                            };
-
-                            await SendUserData(userDto, client.SessionId);
-                            BroadcastMessage(message, client.SessionId);
-                            Console.WriteLine(message);
+                            await AnalyseAndProcessFirstMessage(messageFromClient, client);
                         }
                         else
                         {
                             var receivedMessage = MessageTextParse(messageFromClient);
                             await ProcessingMessage(client.UserDto, receivedMessage);
 
-                            // TODO: ПОЛНЫЙ ППЦ!!! Почему используем эту переменную?
-                            messageFromClient = $"{client.UserName}: {receivedMessage.Body.Text}";
-                            Console.WriteLine(messageFromClient);
-                            BroadcastMessage(messageFromClient, client.SessionId, receivedMessage.GroupId);
+                            var messageToOtherClients = $"{client.UserName}: {receivedMessage.Body.Text}";
+                            Console.WriteLine(messageToOtherClients);
+                            BroadcastMessageAsync(messageToOtherClients, client.SessionId, receivedMessage.GroupId);
                         }
 
                     }
                     catch (UserNotFoundException)
+                    {
+                        SendError(client.SessionId);
+                        _clients.Remove(client);
+                        client.Close();
+                    }
+                    catch(GroupNotFoundException exc)
                     {
                         SendError(client.SessionId);
                         _clients.Remove(client);
@@ -111,7 +100,7 @@ namespace ChatServer
                     {
                         var msg = $"{client.UserName}: покинул чат";
                         Console.WriteLine(msg);
-                        BroadcastMessage(msg, client.SessionId);
+                        BroadcastMessageAsync(msg, client.SessionId);
                         _clients.Remove(client);
                         client.Close();
                     }
@@ -126,7 +115,7 @@ namespace ChatServer
 
         private static string GetMessage(Client client)
         {
-            if (!client.Stream.DataAvailable)
+            if (!client.AvailableMessage())
             {
                 return null;
             }
@@ -136,18 +125,47 @@ namespace ChatServer
 
             do
             {
-                var bytesCount = client.Stream.Read(messageInBytes, 0, messageInBytes.Length);
+                var bytesCount = client.GetBytesCount(messageInBytes);
                 builder.Append(Encoding.UTF8.GetString(messageInBytes, 0, bytesCount));
-            } while (client.Stream.DataAvailable);
+            } while (client.AvailableMessage());
 
             return builder.ToString();
         }
 
-        private async Task<UserDto> AnalyseFirstMessage(string msg)
+        private async Task AnalyseAndProcessFirstMessage(string msg, Client client)
         {
             var regMsg = JsonSerializer.Deserialize<Message<AuthMessage>>(msg);
+            var user = await AuthorizationUser(regMsg);
+            await CompareAndChangeUserGroup(user, regMsg);
+            await GetOldMessagesByUser(user);
+            client.UserDto = user;
+            client.UserName = user.Name;
+            client.GroupId = (long)user.GroupId;
+            var message = client.UserName + " вошел в чат";
+            var userDto = new Message<UserDto>
+            {
+                Login = user.Name,
+                Type = 3,
+                Body = user,
+                GroupId = user.GroupId
+            };
 
-            return await AuthorizationUser(regMsg);
+            await SendUserData(userDto, client.SessionId);
+            BroadcastMessageAsync(message, client.SessionId);
+            Console.WriteLine(message);
+        }
+
+        private async Task GetOldMessagesByUser(UserDto userDto)
+        {
+            await _userService.GetLastMessages(userDto);
+        }
+
+        private async Task CompareAndChangeUserGroup(UserDto user, Message<AuthMessage> regMsg)
+        {
+            if (user.GroupId != null && user.GroupId != regMsg.GroupId)
+            {
+                await _userService.ChangeUserGroup((int)regMsg.GroupId, user);
+            }
         }
 
         private async Task SendUserData(Message<UserDto> msg, string sessionId)
@@ -155,10 +173,16 @@ namespace ChatServer
             var userDataDto = JsonSerializer.Serialize(msg);
             var userDataDtoBytes = Encoding.UTF8.GetBytes(userDataDto);
             var client = _clients.FirstOrDefault(w => w.SessionId == sessionId);
-            // TODO: на null проверить
-            client.GroupId = (long) msg.GroupId;
-            // TODO: инкапсулировать Stream полностью
-            await client.Stream.WriteAsync(userDataDtoBytes, 0, userDataDtoBytes.Length);
+            
+            if (client != null)
+            {
+                client.GroupId = (long)msg.GroupId;
+                await client.SendUserData(userDataDtoBytes);
+            }
+            else
+            {
+                throw new UserNotFoundException("User wasn't found");
+            }
         }
 
         private async Task ProcessingMessage(UserDto user, Message<TxtMessage> receivedMessage)
@@ -185,23 +209,22 @@ namespace ChatServer
             return await _userService.Auth(msg);
         }
 
-        private void BroadcastMessage(string message, string sessionId, long? groupId = null)
+        private async void BroadcastMessageAsync(string message, string sessionId, long? groupId = null)
         {
             var clients = groupId == null ? _clients : _clients.Where(w => w.GroupId == groupId).ToList();
             var messageBytes = Encoding.UTF8.GetBytes(message);
 
             foreach (var client in clients.Where(client => client.SessionId != sessionId))
             {
-                client.Stream.Write(messageBytes, 0, messageBytes.Length);
+                await client.BroadcastMessageAsync(messageBytes);
             }
         }
 
-        private void SendError(string sessionId)
+        private async void SendError(string sessionId)
         {
             var rejectedMessageBytes = Encoding.UTF8.GetBytes("Exit");
             var user = _clients.FirstOrDefault(w => w.SessionId == sessionId);
-            // TODO: инкапсулировать
-            user?.Stream.Write(rejectedMessageBytes, 0, rejectedMessageBytes.Length);
+            await user?.SendError(rejectedMessageBytes);
         }
 
         protected internal void Disconnect()
