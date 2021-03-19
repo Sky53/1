@@ -50,7 +50,7 @@ namespace ChatServer.DataAccessLayer.Repositories
                     .Select(m => m.Body)
                     .ToListAsync();
 
-            return oldNessage.ToList();
+            return oldNessage;
         }
 
         public async Task<Group> ChangeUserGroup(UserDto userDto, long targetGroupId)
