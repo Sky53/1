@@ -28,19 +28,6 @@ namespace ChatServer.DataAccessLayer.Repositories
                     throw new UserNotFoundException("User with this login and password combination wasn't found");
                 }
 
-                var userGroupId = user.Groups.FirstOrDefault()?.Id;
-                if (userGroupId != null && userGroupId != authorizationMessage.GroupId)
-                {
-                   
-                }
-
-                //var userMessages = await _chatContext.BaseMessages
-                //    .Where(w => w.Type == (int)MessageType.Text && w.UserId == user.Id)
-                //    .OrderByDescending(m => m.CreateDate)
-                //    .Take(MessagesCount)
-                //    .Select(m => m.Body)
-                //    .ToListAsync();
-
                 return new UserDto
                 {
                     Id = user.Id,

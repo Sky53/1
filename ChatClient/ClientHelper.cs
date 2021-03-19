@@ -2,7 +2,7 @@
 
 namespace ChatClient
 {
-    public class ClientHelper
+    public static class ClientHelper
     {
         public static Message<AuthMessage> GetRegOrAuthMessage(string userName, string password, int groupId = 0)
         {

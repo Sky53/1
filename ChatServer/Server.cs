@@ -20,7 +20,7 @@ namespace ChatServer
         private readonly MessageService _messageService = new MessageService();
         private readonly UserService _userService = new UserService();
 
-        public void Listen()
+        public void ListenNewConnections()
         {
             try
             {
@@ -34,7 +34,6 @@ namespace ChatServer
                     var client = new Client(tcpClient);
                     _clients.Add(client);
                 }
-
             }
             catch (Exception ex)
             {
@@ -43,14 +42,14 @@ namespace ChatServer
             }
         }
 
-        public async void ReceivingMessages()
+        public async void ReceivingMessagesFromUsers()
         {
             while (true)
             {
                 if (_clients.Count == 0)
                 {
                     continue;
-                };
+                }
 
                 foreach (var client in _clients.ToList()) //Concurrent for the poor
                 {
@@ -76,7 +75,6 @@ namespace ChatServer
                             Console.WriteLine(messageToOtherClients);
                             BroadcastMessageAsync(messageToOtherClients, client.SessionId, receivedMessage.GroupId);
                         }
-
                     }
                     catch (UserNotFoundException)
                     {
@@ -84,7 +82,7 @@ namespace ChatServer
                         _clients.Remove(client);
                         client.Close();
                     }
-                    catch(GroupNotFoundException exc)
+                    catch (GroupNotFoundException exc)
                     {
                         SendError(client.SessionId);
                         _clients.Remove(client);
@@ -140,7 +138,7 @@ namespace ChatServer
             await GetOldMessagesByUser(user);
             client.UserDto = user;
             client.UserName = user.Name;
-            client.GroupId = (long)user.GroupId;
+            client.GroupId = user.GroupId;
             var message = client.UserName + " вошел в чат";
             var userDto = new Message<UserDto>
             {
@@ -162,9 +160,9 @@ namespace ChatServer
 
         private async Task CompareAndChangeUserGroup(UserDto user, Message<AuthMessage> regMsg)
         {
-            if (user.GroupId != null && user.GroupId != regMsg.GroupId)
+            if (user.GroupId != null && user.GroupId != regMsg.GroupId && regMsg.GroupId != null)
             {
-                await _userService.ChangeUserGroup((int)regMsg.GroupId, user);
+               await _userService.ChangeUserGroup((int) regMsg.GroupId, user);
             }
         }
 
@@ -173,10 +171,10 @@ namespace ChatServer
             var userDataDto = JsonSerializer.Serialize(msg);
             var userDataDtoBytes = Encoding.UTF8.GetBytes(userDataDto);
             var client = _clients.FirstOrDefault(w => w.SessionId == sessionId);
-            
+
             if (client != null)
             {
-                client.GroupId = (long)msg.GroupId;
+                client.GroupId =  msg.GroupId;
                 await client.SendUserData(userDataDtoBytes);
             }
             else

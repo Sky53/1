@@ -7,7 +7,6 @@ namespace ChatServer
 {
     public class Client
     {
-        // TODO: SessionId public, Stream private
         public string SessionId { get; private set; }
         private NetworkStream _stream { get; }
         public string UserName;
@@ -26,7 +25,7 @@ namespace ChatServer
         {
             return _stream.DataAvailable;
         }
-        //
+
         protected internal void Close()
         {
             _stream?.Close();
@@ -48,9 +47,9 @@ namespace ChatServer
             await _stream.WriteAsync(messageBytes, 0, messageBytes.Length);
         }
 
-        public async  Task SendError(byte[] rejectedMessageBytes)
+        public async Task SendError(byte[] rejectedMessageBytes)
         {
-           await _stream.WriteAsync(rejectedMessageBytes, 0, rejectedMessageBytes.Length);
+            await _stream.WriteAsync(rejectedMessageBytes, 0, rejectedMessageBytes.Length);
         }
     }
 }

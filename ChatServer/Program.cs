@@ -11,8 +11,8 @@ namespace ChatServer
             var server = new Server();
             try
             {
-                var listenThread = new Thread(server.Listen);
-                var receiveThread = new Thread(server.ReceivingMessages);
+                var listenThread = new Thread(server.ListenNewConnections);
+                var receiveThread = new Thread(server.ReceivingMessagesFromUsers);
                 receiveThread.IsBackground = true;
                 listenThread.Start();
                 receiveThread.Start();
