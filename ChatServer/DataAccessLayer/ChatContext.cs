@@ -1,15 +1,10 @@
 ﻿using ChatServer.DataAccessLayer.Model;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatServer.DataAccessLayer
 {
     public class ChatContext : DbContext
     {
-
-
         public DbSet<User> Users { get; set; }
         public DbSet<BaseMessage> BaseMessages { get; set; }
         public DbSet<Group> Groups { get; set; }
@@ -49,11 +44,11 @@ namespace ChatServer.DataAccessLayer
                     .HasMany(p => p.Groups)
                     .WithMany(p => p.Users)
                     .UsingEntity(j => j.HasData(
-                        new  { UsersId = 1l, GroupsId = 1l },
-                        new  { UsersId = 2l, GroupsId = 2l },
-                        new  { UsersId = 3l, GroupsId = 3l },
-                        new  { UsersId = 4l, GroupsId = 4l },
-                        new  { UsersId = 5l, GroupsId = 5l }
+                        new  { UsersId = 1L, GroupsId = 1L },
+                        new  { UsersId = 2L, GroupsId = 2L },
+                        new  { UsersId = 3L, GroupsId = 3L },
+                        new  { UsersId = 4L, GroupsId = 4L },
+                        new  { UsersId = 5L, GroupsId = 5L }
                         ));
         }
     }

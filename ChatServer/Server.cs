@@ -16,7 +16,7 @@ namespace ChatServer
     public class Server
     {
         private static TcpListener _tcpListener;
-        private List<Client> _clients = new List<Client>();
+        private readonly List<Client> _clients = new List<Client>();
         private readonly MessageService _messageService = new MessageService();
         private readonly UserService _userService = new UserService();
 
@@ -43,107 +43,107 @@ namespace ChatServer
             }
         }
 
-        public async void ReceivingMessage()
+        public async void ReceivingMessages()
         {
             while (true)
             {
-
-                if (_clients.Count != 0)
+                if (_clients.Count == 0)
                 {
+                    continue;
+                };
 
-                    foreach (var client in _clients.ToList()) //Concurrent for the poor
+                foreach (var client in _clients.ToList()) //Concurrent for the poor
+                {
+                    try
                     {
+                        var messageFromClient = GetMessage(client);
 
-                        try
+                        if (messageFromClient == null)
                         {
-                            var msg = GetMessage(client);
+                            continue;
+                        }
 
-                            if (msg == null) continue;
-
-                            if (client.UserDto == null)
+                        if (client.UserDto == null)
+                        {
+                            // TODO: To new method!!!
+                            var user = await AnalyseFirstMessage(messageFromClient);
+                            client.UserDto = user;
+                            client.UserName = user.Name;
+                            client.GroupId = (long) user.GroupId;
+                            var message = client.UserName + " вошел в чат";
+                            var userDto = new Message<UserDto>
                             {
-                                var user = await AnalysFirstMessage(msg);
-                                client.UserDto = user;
-                                client.UserName = user.Name;
-                                client.GroupId = (long) user.GroupId;
-                                var message = client.UserName + " вошел в чат";
-                                var userDto = new Message<UserDto>
-                                {
-                                    Login = user.Name,
-                                    Type = 3,
-                                    Body = user,
-                                    GroupId = user.GroupId
-                                };
+                                Login = user.Name,
+                                Type = 3,
+                                Body = user,
+                                GroupId = user.GroupId
+                            };
 
-                                await SendUserData(userDto, client.SessionId);
-                                BroadcastMessage(message, client.SessionId);
-                                Console.WriteLine(message);
-                            }
-                            else
-                            {
-                                var receivedMessage = MessageTextParse(msg);
-                                await ProcessingMessage(client.UserDto, receivedMessage);
-                                msg = $"{client.UserName}: {receivedMessage.Body.Text}";
-                                Console.WriteLine(msg);
-                                BroadcastMessage(msg, client.SessionId, receivedMessage.GroupId);
-                            }
+                            await SendUserData(userDto, client.SessionId);
+                            BroadcastMessage(message, client.SessionId);
+                            Console.WriteLine(message);
+                        }
+                        else
+                        {
+                            var receivedMessage = MessageTextParse(messageFromClient);
+                            await ProcessingMessage(client.UserDto, receivedMessage);
 
-                        }
-                        catch (UserNotFoundException exc)
-                        {
-                            SendError(client.SessionId);
-                            _clients.Remove(client);
-                            client.Close();
-                            continue;
-                        }
-                        catch (ArgumentNullException exc)
-                        {
-                            SendError(client.SessionId);
-                            _clients.Remove(client);
-                            client.Close();
-                            continue;
-                        }
-                        catch (Exception exc)
-                        {
-                            var msg = $"{client.UserName}: покинул чат";
-                            Console.WriteLine(msg);
-                            BroadcastMessage(msg, client.SessionId);
-                            _clients.Remove(client);
-                            client.Close();
-                            continue;
+                            // TODO: ПОЛНЫЙ ППЦ!!! Почему используем эту переменную?
+                            messageFromClient = $"{client.UserName}: {receivedMessage.Body.Text}";
+                            Console.WriteLine(messageFromClient);
+                            BroadcastMessage(messageFromClient, client.SessionId, receivedMessage.GroupId);
                         }
 
                     }
-
+                    catch (UserNotFoundException)
+                    {
+                        SendError(client.SessionId);
+                        _clients.Remove(client);
+                        client.Close();
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        SendError(client.SessionId);
+                        _clients.Remove(client);
+                        client.Close();
+                    }
+                    catch (Exception)
+                    {
+                        var msg = $"{client.UserName}: покинул чат";
+                        Console.WriteLine(msg);
+                        BroadcastMessage(msg, client.SessionId);
+                        _clients.Remove(client);
+                        client.Close();
+                    }
                 }
-
             }
         }
 
-        private Message<TxtMessage> MessageTextParse(string msg)
+        private static Message<TxtMessage> MessageTextParse(string message)
         {
-            return JsonSerializer.Deserialize<Message<TxtMessage>>(msg);
+            return JsonSerializer.Deserialize<Message<TxtMessage>>(message);
         }
 
-        private string GetMessage(Client client)
+        private static string GetMessage(Client client)
         {
             if (!client.Stream.DataAvailable)
+            {
                 return null;
+            }
 
-            var data = new byte[512];
+            var messageInBytes = new byte[512];
             var builder = new StringBuilder();
-            var bytes = 0;
-           
+
             do
             {
-                bytes = client.Stream.Read(data, 0, data.Length);
-                builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
+                var bytesCount = client.Stream.Read(messageInBytes, 0, messageInBytes.Length);
+                builder.Append(Encoding.UTF8.GetString(messageInBytes, 0, bytesCount));
             } while (client.Stream.DataAvailable);
 
             return builder.ToString();
         }
 
-        private async Task<UserDto> AnalysFirstMessage(string msg)
+        private async Task<UserDto> AnalyseFirstMessage(string msg)
         {
             var regMsg = JsonSerializer.Deserialize<Message<AuthMessage>>(msg);
 
@@ -155,18 +155,20 @@ namespace ChatServer
             var userDataDto = JsonSerializer.Serialize(msg);
             var userDataDtoBytes = Encoding.UTF8.GetBytes(userDataDto);
             var client = _clients.FirstOrDefault(w => w.SessionId == sessionId);
+            // TODO: на null проверить
             client.GroupId = (long) msg.GroupId;
+            // TODO: инкапсулировать Stream полностью
             await client.Stream.WriteAsync(userDataDtoBytes, 0, userDataDtoBytes.Length);
         }
 
         private async Task ProcessingMessage(UserDto user, Message<TxtMessage> receivedMessage)
         {
             receivedMessage.UserId = user.Id;
-            BaseMessage message = ParseMessage(receivedMessage);
+            var message = ParseMessage(receivedMessage);
             await _messageService.Send(message);
         }
 
-        private BaseMessage ParseMessage(Message<TxtMessage> objMsg)
+        private static BaseMessage ParseMessage(Message<TxtMessage> objMsg)
         {
             return new BaseMessage
             {
@@ -198,6 +200,7 @@ namespace ChatServer
         {
             var rejectedMessageBytes = Encoding.UTF8.GetBytes("Exit");
             var user = _clients.FirstOrDefault(w => w.SessionId == sessionId);
+            // TODO: инкапсулировать
             user?.Stream.Write(rejectedMessageBytes, 0, rejectedMessageBytes.Length);
         }
 
