@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ChatServer.DataAccessLayer.Model
+﻿namespace ChatServer.DataAccessLayer.Model
 {
     public enum MessageType
     {

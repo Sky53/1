@@ -1,5 +1,4 @@
-﻿using ChatServer.DataAccessLayer.Model;
-using ChatServer.DataAccessLayer.Repositories;
+﻿using ChatServer.DataAccessLayer.Repositories;
 using ChatServer.DTO;
 using System;
 using System.Threading.Tasks;
@@ -12,8 +11,10 @@ namespace ChatServer.Services
         public async Task<UserDto> Auth(Message<AuthMessage> message)
         {
             if (message == null)
+            {
                 throw new ArgumentNullException(nameof(message));
-          
+            }
+
             return await _userRepository.GetUserByNameAndPassword(message);
         }
     }

@@ -1,5 +1,4 @@
-﻿using ChatServer.DataAccessLayer.Model;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace ChatServer.DTO
 {

@@ -1,5 +1,4 @@
-﻿using ChatServer.DataAccessLayer;
-using System;
+﻿using System;
 using System.Threading;
 
 namespace ChatServer
@@ -13,10 +12,10 @@ namespace ChatServer
             try
             {
                 var listenThread = new Thread(server.Listen);
-                var reciveThred = new Thread(server.ReceivingMessage);
-                reciveThred.IsBackground = true;
+                var receiveThread = new Thread(server.ReceivingMessages);
+                receiveThread.IsBackground = true;
                 listenThread.Start();
-                reciveThred.Start();
+                receiveThread.Start();
             }
             catch (Exception ex)
             {
