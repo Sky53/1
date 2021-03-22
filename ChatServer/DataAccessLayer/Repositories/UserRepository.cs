@@ -41,14 +41,12 @@ namespace ChatServer.DataAccessLayer.Repositories
 
         public async Task<List<string>> GetLastMessages(long userId, int messagesCount)
         {
-            var oldNessage = await _chatContext.BaseMessages
+            return  await _chatContext.BaseMessages
                     .Where(w => w.Type == (int)MessageType.Text && w.UserId == userId)
                     .OrderByDescending(m => m.CreateDate)
                     .Take(messagesCount)
                     .Select(m => m.Body)
                     .ToListAsync();
-
-            return oldNessage;
         }
 
         public async Task<Group> ChangeUserGroup(UserDto userDto, long targetGroupId)

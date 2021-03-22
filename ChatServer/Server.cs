@@ -153,7 +153,7 @@ namespace ChatServer
             };
 
             await SendUserData(userDto, client.SessionId);
-            BroadcastMessageAsync(message, client.SessionId);
+            await BroadcastMessageAsync(message, client.SessionId);
             Console.WriteLine(message);
         }
 
@@ -176,14 +176,14 @@ namespace ChatServer
             var userDataDtoBytes = Encoding.UTF8.GetBytes(userDataDto);
             var client = _clients.FirstOrDefault(w => w.SessionId == sessionId);
 
-            if (client != null)
+            if (client == null)
             {
-                client.GroupId =  msg.GroupId;
-                await client.SendUserData(userDataDtoBytes);
+                throw new UserNotFoundException("User wasn't found");
             }
             else
             {
-                throw new UserNotFoundException("User wasn't found");
+                client.GroupId =  msg.GroupId;
+                await client.SendUserData(userDataDtoBytes);
             }
         }
 
