@@ -47,8 +47,8 @@ namespace ChatClient
         {
             while (true)
             {
-                string Message = MakeMessage();
-                byte[] data = Encoding.UTF8.GetBytes(Message);
+                var Message = MakeMessage();
+                var data = Encoding.UTF8.GetBytes(Message);
                 _stream.Write(data, 0, data.Length);
             }
         }
@@ -69,7 +69,7 @@ namespace ChatClient
                 CreateDate = DateTime.Now,
                 UserId = User.Id
             };
-            string json = JsonSerializer.Serialize(message);
+            var json = JsonSerializer.Serialize(message);
 
             return json;
         }
@@ -80,9 +80,9 @@ namespace ChatClient
             {
                 try
                 {
-                    byte[] data = new byte[512];
-                    StringBuilder builder = new StringBuilder();
-                    int bytes = 0;
+                    var data = new byte[512];
+                    var builder = new StringBuilder();
+                    var bytes = 0;
                    
                     do
                     {
@@ -138,8 +138,8 @@ namespace ChatClient
         private static void SendRegMessage(string userName, string password, bool isReg = false, int group = 0)
         {
             var regOrAuthMessage = ClientHelper.GetRegOrAuthMessage(userName, password, groupId: group);
-            string json = JsonSerializer.Serialize(regOrAuthMessage);
-            byte[] authData = Encoding.UTF8.GetBytes(json);
+            var json = JsonSerializer.Serialize(regOrAuthMessage);
+            var authData = Encoding.UTF8.GetBytes(json);
             _stream.Write(authData, 0, authData.Length);
         }
 
