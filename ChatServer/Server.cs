@@ -42,7 +42,7 @@ namespace ChatServer
             }
         }
 
-        public async void ReceivingMessagesFromUsers()
+        public async void ReceivingMessagesFromClients()
         {
             while (true)
             {
@@ -135,15 +135,19 @@ namespace ChatServer
             var regMsg = JsonSerializer.Deserialize<Message<AuthMessage>>(msg);
             var user = await AuthorizationUser(regMsg);
             await CompareAndChangeUserGroup(user, regMsg);
-            await GetOldMessagesByUser(user);
+            var oldMessage = await GetOldMessagesByUser(user);
+           
             client.UserDto = user;
             client.UserName = user.Name;
             client.GroupId = user.GroupId;
+            client.UserDto.Messages = oldMessage;
+            
             var message = client.UserName + " вошел в чат";
+           
             var userDto = new Message<UserDto>
             {
                 Login = user.Name,
-                Type = 3,
+                Type = (int)MessageType.UserData,
                 Body = user,
                 GroupId = user.GroupId
             };
@@ -153,9 +157,9 @@ namespace ChatServer
             Console.WriteLine(message);
         }
 
-        private async Task GetOldMessagesByUser(UserDto userDto)
+        private async Task<List<string>> GetOldMessagesByUser(UserDto userDto)
         {
-            await _userService.GetLastMessages(userDto);
+            return await _userService.GetLastMessages(userDto);
         }
 
         private async Task CompareAndChangeUserGroup(UserDto user, Message<AuthMessage> regMsg)
@@ -207,22 +211,22 @@ namespace ChatServer
             return await _userService.Auth(msg);
         }
 
-        private async void BroadcastMessageAsync(string message, string sessionId, long? groupId = null)
+        private async Task BroadcastMessageAsync(string message, string sessionId, long? groupId = null)
         {
             var clients = groupId == null ? _clients : _clients.Where(w => w.GroupId == groupId).ToList();
             var messageBytes = Encoding.UTF8.GetBytes(message);
 
             foreach (var client in clients.Where(client => client.SessionId != sessionId))
             {
-                await client.BroadcastMessageAsync(messageBytes);
+                await client.SendMessageAsync(messageBytes);
             }
         }
 
         private async void SendError(string sessionId)
         {
             var rejectedMessageBytes = Encoding.UTF8.GetBytes("Exit");
-            var user = _clients.FirstOrDefault(w => w.SessionId == sessionId);
-            await user?.SendError(rejectedMessageBytes);
+            var client = _clients.FirstOrDefault(w => w.SessionId == sessionId);
+            await client?.SendError(rejectedMessageBytes);
         }
 
         protected internal void Disconnect()

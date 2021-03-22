@@ -11,6 +11,7 @@ namespace ChatServer.Services
     public class UserService
     {
         private readonly UserRepository _userRepository = new UserRepository();
+        private const int MessagesCount = 10;
         public async Task<UserDto> Auth(Message<AuthMessage> message)
         {
             if (message == null)
@@ -25,20 +26,19 @@ namespace ChatServer.Services
         {
             var newGroup = await _userRepository.ChangeUserGroup(userDto, targetGroupId);
 
-            if (newGroup != null)
-            {
-                userDto.GroupId = newGroup.Id;
-            }
-            else 
+            if (newGroup == null)
             {
                 throw new GroupNotFoundException($"Group with id = {targetGroupId} not founded");
             }
+            else 
+            {
+                userDto.GroupId = newGroup.Id;
+            }
         }
 
-        public async Task GetLastMessages(UserDto userDto)
+        public async Task<List<string>> GetLastMessages(UserDto userDto)
         {
-            var oldMessages = await _userRepository.GetLastMessages(userDto.Id);
-            userDto.Messages = oldMessages;
+            return await _userRepository.GetLastMessages(userDto.Id,MessagesCount);
         }
     }
 }

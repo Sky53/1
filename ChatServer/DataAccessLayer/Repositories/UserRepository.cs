@@ -10,8 +10,6 @@ namespace ChatServer.DataAccessLayer.Repositories
 {
     public class UserRepository
     {
-        private const int MessagesCount = 10;
-
         private readonly ChatContext _chatContext = new ChatContext();
 
         public async Task<UserDto> GetUserByNameAndPassword(Message<AuthMessage> authorizationMessage)
@@ -41,12 +39,12 @@ namespace ChatServer.DataAccessLayer.Repositories
             }
         }
 
-        public async Task<List<string>> GetLastMessages(long userId)
+        public async Task<List<string>> GetLastMessages(long userId, int messagesCount)
         {
             var oldNessage = await _chatContext.BaseMessages
                     .Where(w => w.Type == (int)MessageType.Text && w.UserId == userId)
                     .OrderByDescending(m => m.CreateDate)
-                    .Take(MessagesCount)
+                    .Take(messagesCount)
                     .Select(m => m.Body)
                     .ToListAsync();
 

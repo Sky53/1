@@ -42,7 +42,7 @@ namespace ChatServer
             await _stream.WriteAsync(userDataDtoBytes, 0, userDataDtoBytes.Length);
         }
 
-        public async Task BroadcastMessageAsync(byte[] messageBytes)
+        public async Task SendMessageAsync(byte[] messageBytes)
         {
             await _stream.WriteAsync(messageBytes, 0, messageBytes.Length);
         }
