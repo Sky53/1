@@ -200,7 +200,7 @@ namespace ChatServer
             {
                 UserId = objMsg.UserId,
                 CreateDate = DateTime.Now,
-                Type = 2,
+                Type = (int)MessageType.Text,
                 Body = objMsg.Body.Text,
                 GroupId = objMsg.GroupId
             };
