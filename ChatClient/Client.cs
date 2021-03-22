@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using ChatServer.DataAccessLayer.Model;
 
 namespace ChatClient
 {
@@ -64,7 +65,7 @@ namespace ChatClient
             {
                 GroupId = forAll ? null : User.GroupId,
                 Login = _userName,
-                Type = 2,
+                Type = (int)MessageType.Text,
                 Body = new TxtMessage { Text = text },
                 CreateDate = DateTime.Now,
                 UserId = User.Id
