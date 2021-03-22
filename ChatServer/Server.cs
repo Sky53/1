@@ -73,7 +73,7 @@ namespace ChatServer
 
                             var messageToOtherClients = $"{client.UserName}: {receivedMessage.Body.Text}";
                             Console.WriteLine(messageToOtherClients);
-                            BroadcastMessageAsync(messageToOtherClients, client.SessionId, receivedMessage.GroupId);
+                            await BroadcastMessageAsync(messageToOtherClients, client.SessionId, receivedMessage.GroupId);
                         }
                     }
                     catch (UserNotFoundException)
@@ -98,7 +98,7 @@ namespace ChatServer
                     {
                         var msg = $"{client.UserName}: покинул чат";
                         Console.WriteLine(msg);
-                        BroadcastMessageAsync(msg, client.SessionId);
+                        await BroadcastMessageAsync(msg, client.SessionId);
                         _clients.Remove(client);
                         client.Close();
                     }
