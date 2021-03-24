@@ -14,9 +14,7 @@ namespace ChatServer.DataAccessLayer.Repositories
 
         public async Task<UserDto> GetUserByNameAndPassword(Message<AuthMessage> authorizationMessage)
         {
-            try
-            {
-                var user = await _chatContext.Users
+            var user = await _chatContext.Users
                     .Include(i => i.Groups)
                     .FirstOrDefaultAsync(w =>
                         w.Name == authorizationMessage.Body.Login && w.Pass == authorizationMessage.Body.Pass);
@@ -33,11 +31,6 @@ namespace ChatServer.DataAccessLayer.Repositories
                     Name = user.Name
                 };
             }
-            catch
-            {
-                throw;
-            }
-        }
 
         public async Task<List<string>> GetLastMessages(long userId, int messagesCount)
         {
@@ -52,6 +45,12 @@ namespace ChatServer.DataAccessLayer.Repositories
         public async Task<Group> ChangeUserGroup(UserDto userDto, long targetGroupId)
         {
             var user = await _chatContext.Users.FindAsync(userDto.Id);
+            
+            if (user == null)
+            {
+                throw new UserNotFoundException("User with this login and password combination wasn't found");
+            }
+            
             var oldGroup = await _chatContext.Groups.FindAsync(userDto.GroupId);
 
             if (oldGroup != null)

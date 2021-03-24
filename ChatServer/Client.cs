@@ -9,9 +9,7 @@ namespace ChatServer
     {
         public string SessionId { get; private set; }
         private NetworkStream _stream { get; }
-        public string UserName;
         public UserDto UserDto;
-        public long? GroupId;
         private readonly TcpClient _tcpClient;
 
         public Client(TcpClient tcpClient)
@@ -32,24 +30,14 @@ namespace ChatServer
             _tcpClient?.Close();
         }
 
-        public int GetBytesCount(byte[] messageInBytes)
+        public int ReadMessageBytesCount(byte[] messageInBytes)
         {
             return _stream.Read(messageInBytes, 0, messageInBytes.Length);
         }
-
-        public async Task SendUserData(byte[] userDataDtoBytes)
-        {
-            await _stream.WriteAsync(userDataDtoBytes, 0, userDataDtoBytes.Length);
-        }
-
+        
         public async Task SendMessageAsync(byte[] messageBytes)
         {
             await _stream.WriteAsync(messageBytes, 0, messageBytes.Length);
-        }
-
-        public async Task SendError(byte[] rejectedMessageBytes)
-        {
-            await _stream.WriteAsync(rejectedMessageBytes, 0, rejectedMessageBytes.Length);
         }
     }
 }

@@ -1,10 +1,9 @@
-﻿using ChatServer.DTO;
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using ChatServer.DataAccessLayer.Model;
+using ChatClient.Model;
 
 namespace ChatClient
 {
@@ -44,12 +43,13 @@ namespace ChatClient
                 Disconnect();
             }
         }
+
         static void SendMessage()
         {
             while (true)
             {
-                var Message = MakeMessage();
-                var data = Encoding.UTF8.GetBytes(Message);
+                var message = MakeMessage();
+                var data = Encoding.UTF8.GetBytes(message);
                 _stream.Write(data, 0, data.Length);
             }
         }
@@ -65,8 +65,8 @@ namespace ChatClient
             {
                 GroupId = forAll ? null : User.GroupId,
                 Login = _userName,
-                Type = (int)MessageType.Text,
-                Body = new TxtMessage { Text = text },
+                Type = (int) MessageType.Text,
+                Body = new TxtMessage {Text = text},
                 CreateDate = DateTime.Now,
                 UserId = User.Id
             };
@@ -84,21 +84,18 @@ namespace ChatClient
                     var data = new byte[512];
                     var builder = new StringBuilder();
                     var bytes = 0;
-                   
+
                     do
                     {
                         bytes = _stream.Read(data, 0, data.Length);
                         builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
-                    }
-                    while (_stream.DataAvailable);
+                    } while (_stream.DataAvailable);
 
                     string message = builder.ToString();
                     if (message != null)
                     {
                         AnalysisMessage(message);
                     }
-                   
-
                 }
                 catch (Exception e)
                 {
@@ -115,20 +112,20 @@ namespace ChatClient
             {
                 Disconnect();
             }
+
             if (message.Contains("\"Type\":3"))
             {
                 var user = JsonSerializer.Deserialize<Message<UserDto>>(message);
                 User = user.Body;
                 Console.WriteLine($"Welcome {User.Name}");
-                
-                if (user.Body.Messages != null )
+
+                if (user.Body.Messages != null)
                 {
                     foreach (var item in user.Body.Messages)
                     {
                         Console.WriteLine(item);
                     }
                 }
-
             }
             else
             {

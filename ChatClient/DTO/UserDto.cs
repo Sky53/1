@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ChatServer.DTO
+namespace ChatClient.Model
 {
     public class UserDto
     {

@@ -1,5 +1,4 @@
-﻿using ChatServer.DataAccessLayer.Model;
-using ChatServer.DTO;
+﻿using ChatClient.Model;
 
 namespace ChatClient
 {
@@ -8,7 +7,10 @@ namespace ChatClient
         public static Message<AuthMessage> GetRegOrAuthMessage(string userName, string password, int groupId = 0)
         {
             return new Message<AuthMessage>
-                     { Body = new AuthMessage { Pass = password, Login = userName }, GroupId = groupId, Type = (int)MessageType.Authorization };
+            {
+                Body = new AuthMessage {Pass = password, Login = userName}, GroupId = groupId,
+                Type = (int) MessageType.Authorization
+            };
         }
     }
 }

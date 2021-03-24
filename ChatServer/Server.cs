@@ -71,7 +71,7 @@ namespace ChatServer
                             var receivedMessage = MessageTextParse(messageFromClient);
                             await ProcessingMessage(client.UserDto, receivedMessage);
 
-                            var messageToOtherClients = $"{client.UserName}: {receivedMessage.Body.Text}";
+                            var messageToOtherClients = $"{client.UserDto.Name}: {receivedMessage.Body.Text}";
                             Console.WriteLine(messageToOtherClients);
                             await BroadcastMessageAsync(messageToOtherClients, client.SessionId, receivedMessage.GroupId);
                         }
@@ -96,7 +96,7 @@ namespace ChatServer
                     }
                     catch (Exception)
                     {
-                        var msg = $"{client.UserName}: покинул чат";
+                        var msg = $"{client.UserDto.Name}: покинул чат";
                         Console.WriteLine(msg);
                         await BroadcastMessageAsync(msg, client.SessionId);
                         _clients.Remove(client);
@@ -123,7 +123,7 @@ namespace ChatServer
 
             do
             {
-                var bytesCount = client.GetBytesCount(messageInBytes);
+                var bytesCount = client.ReadMessageBytesCount(messageInBytes);
                 builder.Append(Encoding.UTF8.GetString(messageInBytes, 0, bytesCount));
             } while (client.AvailableMessage());
 
@@ -138,11 +138,11 @@ namespace ChatServer
             var oldMessage = await GetOldMessagesByUser(user);
            
             client.UserDto = user;
-            client.UserName = user.Name;
-            client.GroupId = user.GroupId;
+            client.UserDto.Name = user.Name;
+            client.UserDto.GroupId = user.GroupId;
             client.UserDto.Messages = oldMessage;
             
-            var message = client.UserName + " вошел в чат";
+            var message = client.UserDto.Name + " вошел в чат";
            
             var userDto = new Message<UserDto>
             {
@@ -182,8 +182,8 @@ namespace ChatServer
             }
             else
             {
-                client.GroupId =  msg.GroupId;
-                await client.SendUserData(userDataDtoBytes);
+                client.UserDto.GroupId =  msg.GroupId;
+                await client.SendMessageAsync(userDataDtoBytes);
             }
         }
 
@@ -213,7 +213,7 @@ namespace ChatServer
 
         private async Task BroadcastMessageAsync(string message, string sessionId, long? groupId = null)
         {
-            var clients = groupId == null ? _clients : _clients.Where(w => w.GroupId == groupId).ToList();
+            var clients = groupId == null ? _clients : _clients.Where(w => w.UserDto.GroupId == groupId).ToList();
             var messageBytes = Encoding.UTF8.GetBytes(message);
 
             foreach (var client in clients.Where(client => client.SessionId != sessionId))
@@ -226,7 +226,10 @@ namespace ChatServer
         {
             var rejectedMessageBytes = Encoding.UTF8.GetBytes("Exit");
             var client = _clients.FirstOrDefault(w => w.SessionId == sessionId);
-            await client?.SendError(rejectedMessageBytes);
+            if (client != null)
+            {
+                await client?.SendMessageAsync(rejectedMessageBytes);
+            }
         }
 
         protected internal void Disconnect()
