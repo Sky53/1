@@ -12,29 +12,17 @@ namespace ChatServer.DataAccessLayer.Repositories
     {
         private readonly ChatContext _chatContext = new ChatContext();
 
-        public async Task<UserDto> GetUserByNameAndPassword(Message<AuthMessage> authorizationMessage)
+        public Task<User> GetUserByNameAndPassword(Message<AuthMessage> authorizationMessage)
         {
-            var user = await _chatContext.Users
+            return _chatContext.Users
                     .Include(i => i.Groups)
                     .FirstOrDefaultAsync(w =>
                         w.Name == authorizationMessage.Body.Login && w.Pass == authorizationMessage.Body.Pass);
+        }
 
-                if (user == null)
-                {
-                    throw new UserNotFoundException("User with this login and password combination wasn't found");
-                }
-
-                return new UserDto
-                {
-                    Id = user.Id,
-                    GroupId = user.Groups.FirstOrDefault()?.Id,
-                    Name = user.Name
-                };
-            }
-
-        public async Task<List<string>> GetLastMessages(long userId, int messagesCount)
+        public Task<List<string>> GetLastMessages(long userId, int messagesCount)
         {
-            return  await _chatContext.BaseMessages
+            return  _chatContext.BaseMessages
                     .Where(w => w.Type == (int)MessageType.Text && w.UserId == userId)
                     .OrderByDescending(m => m.CreateDate)
                     .Take(messagesCount)
@@ -42,24 +30,18 @@ namespace ChatServer.DataAccessLayer.Repositories
                     .ToListAsync();
         }
 
-        public async Task<Group> ChangeUserGroup(UserDto userDto, long targetGroupId)
+        public async Task<Group> ChangeUserGroup(long userId, long? targetGroupId)
         {
-            var user = await _chatContext.Users.FindAsync(userDto.Id);
-            
+            var user = await _chatContext.Users.FindAsync(userId);
+
             if (user == null)
             {
-                throw new UserNotFoundException("User with this login and password combination wasn't found");
+                throw new UserNotFoundException($"User with ID={userId} doesn't exist");
             }
-            
-            var oldGroup = await _chatContext.Groups.FindAsync(userDto.GroupId);
 
-            if (oldGroup != null)
-            {
-                user.Groups.Remove(oldGroup);
-            }
+            user.Groups.Clear();
 
             var newGroup = await _chatContext.Groups.FindAsync(targetGroupId);
-
             if (newGroup != null)
             {
                 user.Groups.Add(newGroup);

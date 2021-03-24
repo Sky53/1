@@ -25,24 +25,27 @@ namespace ChatServer.Services
                 throw new ArgumentNullException(nameof(message));
             }
 
-            return await _userRepository.GetUserByNameAndPassword(message);
-        }
+            var user = await _userRepository.GetUserByNameAndPassword(message);
 
-        public async Task ChangeUserGroup(long targetGroupId, UserDto userDto)
-        {
-            var newGroup = await _userRepository.ChangeUserGroup(userDto, targetGroupId);
-
-            if (newGroup == null)
+            if (user == null)
             {
-                throw new GroupNotFoundException($"Group with id = {targetGroupId} not founded");
+                throw new UserNotFoundException("User with this login and password combination wasn't found");
             }
 
-            userDto.GroupId = newGroup.Id;
-        }
+            var newGroup = await _userRepository.ChangeUserGroup(user.Id, message.GroupId);
+            if (newGroup == null)
+            {
+                throw new GroupNotFoundException($"Group with id = {message.GroupId} not founded");
+            }
 
-        public async Task<List<string>> GetLastMessages(UserDto userDto)
-        {
-            return await _userRepository.GetLastMessages(userDto.Id, MessagesCount);
+            var oldMessages = await _userRepository.GetLastMessages(user.Id, MessagesCount);
+
+            return new UserDto
+            {
+                Id = user.Id,
+                GroupId = newGroup.Id,
+                Messages = oldMessages
+            };
         }
     }
 }

@@ -83,19 +83,7 @@ namespace ChatServer
                                 receivedMessage.GroupId);
                         }
                     }
-                    catch (UserNotFoundException)
-                    {
-                        SendError(client.SessionId);
-                        _clients.Remove(client);
-                        client.Close();
-                    }
-                    catch (GroupNotFoundException exc)
-                    {
-                        SendError(client.SessionId);
-                        _clients.Remove(client);
-                        client.Close();
-                    }
-                    catch (ArgumentNullException)
+                    catch (Exception ex) when (ex is UserNotFoundException || ex is GroupNotFoundException || ex is ArgumentNullException)
                     {
                         SendError(client.SessionId);
                         _clients.Remove(client);
@@ -103,7 +91,7 @@ namespace ChatServer
                     }
                     catch (Exception)
                     {
-                        var msg = $"{client.UserDto.Name}: покинул чат";
+                        var msg = $"{client.UserDto?.Name}: покинул чат";
                         Console.WriteLine(msg);
                         await BroadcastMessageAsync(msg, client.SessionId);
                         _clients.Remove(client);
@@ -140,18 +128,20 @@ namespace ChatServer
         private async Task AnalyseAndProcessFirstMessage(string msg, Client client)
         {
             var authMessage = JsonSerializer.Deserialize<Message<AuthMessage>>(msg);
-            var user = await AuthorizationUser(authMessage);
-            await CompareAndChangeUserGroup(user, authMessage);
-            var oldMessage = await GetOldMessagesByUser(user);
+            var user = await _userService.Auth(authMessage);
 
             client.UserDto = user;
-            client.UserDto.Name = user.Name;
-            client.UserDto.GroupId = user.GroupId;
-            client.UserDto.Messages = oldMessage;
 
             var message = client.UserDto.Name + " вошел в чат";
 
-            var userDto = new Message<UserDto>
+            await SendUserDataMessage(user, client);
+            await BroadcastMessageAsync(message, client.SessionId);
+            Console.WriteLine(message);
+        }
+
+        private static async Task SendUserDataMessage(UserDto user, Client client)
+        {
+            var message = new Message<UserDto>
             {
                 Login = user.Name,
                 Type = (int) MessageType.UserData,
@@ -159,61 +149,16 @@ namespace ChatServer
                 GroupId = user.GroupId
             };
 
-            await SendUserData(userDto, client.SessionId);
-            await BroadcastMessageAsync(message, client.SessionId);
-            Console.WriteLine(message);
-        }
+            var userDataMessage = JsonSerializer.Serialize(message);
+            var userDataMessageInBytes = Encoding.UTF8.GetBytes(userDataMessage);
 
-        private async Task<List<string>> GetOldMessagesByUser(UserDto userDto)
-        {
-            return await _userService.GetLastMessages(userDto);
-        }
-
-        private async Task CompareAndChangeUserGroup(UserDto user, Message<AuthMessage> regMsg)
-        {
-            if (user.GroupId != null && user.GroupId != regMsg.GroupId && regMsg.GroupId != null)
-            {
-                await _userService.ChangeUserGroup((int) regMsg.GroupId, user);
-            }
-        }
-
-        private async Task SendUserData(Message<UserDto> msg, string sessionId)
-        {
-            var userDataDto = JsonSerializer.Serialize(msg);
-            var userDataDtoBytes = Encoding.UTF8.GetBytes(userDataDto);
-            var client = _clients.FirstOrDefault(w => w.SessionId == sessionId);
-
-            if (client == null)
-            {
-                throw new UserNotFoundException("User wasn't found");
-            }
-
-            client.UserDto.GroupId = msg.GroupId;
-            await client.SendMessageAsync(userDataDtoBytes);
+            await client.SendMessageAsync(userDataMessageInBytes);
         }
 
         private async Task ProcessingMessage(UserDto user, Message<TxtMessage> receivedMessage)
         {
             receivedMessage.UserId = user.Id;
-            var message = ParseMessage(receivedMessage);
-            await _messageService.Send(message);
-        }
-
-        private static BaseMessage ParseMessage(Message<TxtMessage> objMsg)
-        {
-            return new BaseMessage
-            {
-                UserId = objMsg.UserId,
-                CreateDate = DateTime.Now,
-                Type = (int) MessageType.Text,
-                Body = objMsg.Body.Text,
-                GroupId = objMsg.GroupId
-            };
-        }
-
-        private async Task<UserDto> AuthorizationUser(Message<AuthMessage> msg)
-        {
-            return await _userService.Auth(msg);
+            await _messageService.Save(receivedMessage);
         }
 
         private async Task BroadcastMessageAsync(string message, string sessionId, long? groupId = null)
