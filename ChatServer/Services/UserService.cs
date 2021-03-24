@@ -43,6 +43,7 @@ namespace ChatServer.Services
             return new UserDto
             {
                 Id = user.Id,
+                Name = user.Name,
                 GroupId = newGroup.Id,
                 Messages = oldMessages
             };

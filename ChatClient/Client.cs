@@ -81,7 +81,6 @@ namespace ChatClient
                 {
                     Text = text
                 },
-                CreateDate = DateTime.Now
             };
 
             return JsonSerializer.Serialize(message);
