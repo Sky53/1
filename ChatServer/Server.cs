@@ -187,11 +187,9 @@ namespace ChatServer
             {
                 throw new UserNotFoundException("User wasn't found");
             }
-            else
-            {
-                client.UserDto.GroupId = msg.GroupId;
-                await client.SendMessageAsync(userDataDtoBytes);
-            }
+
+            client.UserDto.GroupId = msg.GroupId;
+            await client.SendMessageAsync(userDataDtoBytes);
         }
 
         private async Task ProcessingMessage(UserDto user, Message<TxtMessage> receivedMessage)

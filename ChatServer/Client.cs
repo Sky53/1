@@ -24,12 +24,6 @@ namespace ChatServer
             return _stream.DataAvailable;
         }
 
-        protected internal void Close()
-        {
-            _stream?.Close();
-            _tcpClient?.Close();
-        }
-
         public int ReadMessageBytesCount(byte[] messageInBytes)
         {
             return _stream.Read(messageInBytes, 0, messageInBytes.Length);
@@ -38,6 +32,12 @@ namespace ChatServer
         public async Task SendMessageAsync(byte[] messageBytes)
         {
             await _stream.WriteAsync(messageBytes, 0, messageBytes.Length);
+        }
+        
+        protected internal void Close()
+        {
+            _stream?.Close();
+            _tcpClient?.Close();
         }
     }
 }
