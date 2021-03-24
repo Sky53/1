@@ -4,11 +4,15 @@ namespace ChatClient
 {
     public static class ClientHelper
     {
-        public static Message<AuthMessage> GetRegOrAuthMessage(string userName, string password, int groupId = 0)
+        public static Message<AuthMessage> GetAuthenticationMessage(string userName, string password, int groupId = 0)
         {
             return new Message<AuthMessage>
             {
-                Body = new AuthMessage {Pass = password, Login = userName},
+                Body = new AuthMessage
+                {
+                    Login = userName,
+                    Pass = password
+                },
                 GroupId = groupId,
                 Type = (int) MessageType.Authorization
             };
