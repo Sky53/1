@@ -76,7 +76,6 @@ namespace ChatClient
             var message = new Message<TxtMessage>
             {
                 GroupId = forAll ? null : _userDto.GroupId,
-                Login = _userDto.Name,
                 Type = (int) MessageType.Text,
                 Body = new TxtMessage
                 {
