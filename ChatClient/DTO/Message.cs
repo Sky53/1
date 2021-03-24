@@ -1,11 +1,9 @@
 ﻿using System;
 
-namespace ChatServer.DTO
+namespace ChatClient.Model
 {
     public class Message<T>
     {
-        public string Login { get; set; }
-        public long UserId { get; set; }
         public int Type { get; set; }
         public T Body { get; set; }
         public long? GroupId { get; set; }

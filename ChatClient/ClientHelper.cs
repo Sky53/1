@@ -1,13 +1,21 @@
-﻿using ChatServer.DTO;
+﻿using ChatClient.Model;
 
 namespace ChatClient
 {
-    public class ClientHelper
+    public static class ClientHelper
     {
-        public static Message<AuthMessage> GetRegOrAuthMessage(string userName, string password, int groupId = 0)
+        public static Message<AuthMessage> GetAuthenticationMessage(string userName, string password, int groupId = 0)
         {
             return new Message<AuthMessage>
-                     { Body = new AuthMessage { Pass = password, Login = userName }, GroupId = groupId, Type = 1 };
+            {
+                Body = new AuthMessage
+                {
+                    Login = userName,
+                    Pass = password
+                },
+                GroupId = groupId,
+                Type = (int) MessageType.Authorization
+            };
         }
     }
 }

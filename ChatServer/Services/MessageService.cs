@@ -2,21 +2,36 @@
 using ChatServer.DataAccessLayer.Repositories;
 using System;
 using System.Threading.Tasks;
+using ChatServer.DTO;
 
 namespace ChatServer.Services
 {
     public class MessageService
     {
-        private readonly MessageRepository _messageRepository = new MessageRepository();
+        private readonly MessageRepository _messageRepository;
 
-        public async Task Send(BaseMessage textMessage)
+        public MessageService(MessageRepository messageRepository)
+        {
+            _messageRepository = messageRepository;
+        }
+
+        public async Task Save(Message<TxtMessage> textMessage)
         {
             if (textMessage == null)
             {
                 throw new ArgumentNullException(nameof(textMessage));
             }
 
-            await _messageRepository.CreateMessage(textMessage);
+            var baseMessage = new BaseMessage
+            {
+                UserId = textMessage.UserId,
+                CreateDate = DateTime.Now,
+                Type = (int) MessageType.Text,
+                Body = textMessage.Body.Text,
+                GroupId = textMessage.GroupId
+            };
+
+            await _messageRepository.CreateMessage(baseMessage);
         }
     }
 }
