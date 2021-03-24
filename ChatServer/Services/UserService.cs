@@ -36,15 +36,13 @@ namespace ChatServer.Services
             {
                 throw new GroupNotFoundException($"Group with id = {targetGroupId} not founded");
             }
-            else 
-            {
-                userDto.GroupId = newGroup.Id;
-            }
+
+            userDto.GroupId = newGroup.Id;
         }
 
         public async Task<List<string>> GetLastMessages(UserDto userDto)
         {
-            return await _userRepository.GetLastMessages(userDto.Id,MessagesCount);
+            return await _userRepository.GetLastMessages(userDto.Id, MessagesCount);
         }
     }
 }

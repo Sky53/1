@@ -139,9 +139,9 @@ namespace ChatServer
 
         private async Task AnalyseAndProcessFirstMessage(string msg, Client client)
         {
-            var regMsg = JsonSerializer.Deserialize<Message<AuthMessage>>(msg);
-            var user = await AuthorizationUser(regMsg);
-            await CompareAndChangeUserGroup(user, regMsg);
+            var authMessage = JsonSerializer.Deserialize<Message<AuthMessage>>(msg);
+            var user = await AuthorizationUser(authMessage);
+            await CompareAndChangeUserGroup(user, authMessage);
             var oldMessage = await GetOldMessagesByUser(user);
 
             client.UserDto = user;
