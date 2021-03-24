@@ -17,8 +17,14 @@ namespace ChatServer
     {
         private static TcpListener _tcpListener;
         private readonly List<Client> _clients = new List<Client>();
-        private readonly MessageService _messageService = new MessageService();
-        private readonly UserService _userService = new UserService();
+        private readonly MessageService _messageService;
+        private readonly UserService _userService;
+
+        public Server(MessageService messageService, UserService userService)
+        {
+            _messageService = messageService;
+            _userService = userService;
+        }
 
         public void ListenNewConnections()
         {
@@ -73,7 +79,8 @@ namespace ChatServer
 
                             var messageToOtherClients = $"{client.UserDto.Name}: {receivedMessage.Body.Text}";
                             Console.WriteLine(messageToOtherClients);
-                            await BroadcastMessageAsync(messageToOtherClients, client.SessionId, receivedMessage.GroupId);
+                            await BroadcastMessageAsync(messageToOtherClients, client.SessionId,
+                                receivedMessage.GroupId);
                         }
                     }
                     catch (UserNotFoundException)
@@ -136,18 +143,18 @@ namespace ChatServer
             var user = await AuthorizationUser(regMsg);
             await CompareAndChangeUserGroup(user, regMsg);
             var oldMessage = await GetOldMessagesByUser(user);
-           
+
             client.UserDto = user;
             client.UserDto.Name = user.Name;
             client.UserDto.GroupId = user.GroupId;
             client.UserDto.Messages = oldMessage;
-            
+
             var message = client.UserDto.Name + " вошел в чат";
-           
+
             var userDto = new Message<UserDto>
             {
                 Login = user.Name,
-                Type = (int)MessageType.UserData,
+                Type = (int) MessageType.UserData,
                 Body = user,
                 GroupId = user.GroupId
             };
@@ -166,7 +173,7 @@ namespace ChatServer
         {
             if (user.GroupId != null && user.GroupId != regMsg.GroupId && regMsg.GroupId != null)
             {
-               await _userService.ChangeUserGroup((int) regMsg.GroupId, user);
+                await _userService.ChangeUserGroup((int) regMsg.GroupId, user);
             }
         }
 
@@ -182,7 +189,7 @@ namespace ChatServer
             }
             else
             {
-                client.UserDto.GroupId =  msg.GroupId;
+                client.UserDto.GroupId = msg.GroupId;
                 await client.SendMessageAsync(userDataDtoBytes);
             }
         }
@@ -200,7 +207,7 @@ namespace ChatServer
             {
                 UserId = objMsg.UserId,
                 CreateDate = DateTime.Now,
-                Type = (int)MessageType.Text,
+                Type = (int) MessageType.Text,
                 Body = objMsg.Body.Text,
                 GroupId = objMsg.GroupId
             };

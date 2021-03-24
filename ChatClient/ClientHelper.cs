@@ -8,7 +8,8 @@ namespace ChatClient
         {
             return new Message<AuthMessage>
             {
-                Body = new AuthMessage {Pass = password, Login = userName}, GroupId = groupId,
+                Body = new AuthMessage {Pass = password, Login = userName},
+                GroupId = groupId,
                 Type = (int) MessageType.Authorization
             };
         }

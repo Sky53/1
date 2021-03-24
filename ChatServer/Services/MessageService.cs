@@ -7,8 +7,12 @@ namespace ChatServer.Services
 {
     public class MessageService
     {
-        private readonly MessageRepository _messageRepository = new MessageRepository();
+        private readonly MessageRepository _messageRepository;
 
+        public MessageService(MessageRepository messageRepository)
+        {
+            _messageRepository = messageRepository;
+        }
         public async Task Send(BaseMessage textMessage)
         {
             if (textMessage == null)

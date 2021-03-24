@@ -10,8 +10,14 @@ namespace ChatServer.Services
 {
     public class UserService
     {
-        private readonly UserRepository _userRepository = new UserRepository();
+        private readonly UserRepository _userRepository;
         private const int MessagesCount = 10;
+
+        public UserService(UserRepository userRepository)
+        {
+            _userRepository = userRepository;
+        }
+
         public async Task<UserDto> Auth(Message<AuthMessage> message)
         {
             if (message == null)
