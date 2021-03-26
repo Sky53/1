@@ -3,61 +3,43 @@ using ChatServer.DataAccessLayer.Repositories;
 using ChatServer.DTO;
 using ChatServer.Services;
 using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace ChatServerTest
 {
     public class MessageServiceTest
     {
-        private static readonly MessageRepository MessageRepository = new MessageRepository();
-        private readonly MessageService _messageService = new MessageService(MessageRepository);
+        private readonly MessageService _messageService;
+
+        public MessageServiceTest()
+        {
+
+            _messageService = new MessageService(new MessageRepository());
+        }
 
         [Fact]
         public async void PositiveCaseSaveMessage()
         {
-            var result = true;
             var textMessage = new Message<TxtMessage>
             {
                 Type = (int)MessageType.Text,
-                Body = new TxtMessage 
+                Body = new TxtMessage
                 {
                     Text = "Hi, i'm test message"
                 },
                 UserId = 1,//Id for test
                 GroupId = null
             };
-
-            try
-            {
-                await _messageService.Save(textMessage);
-            }
-            catch (Exception e)
-            {
-                result = false;
-            }
-            finally 
-            {
-                Assert.True(result);
-            }
+            await Assert.IsAssignableFrom<Task>(_messageService.Save(textMessage));
         }
 
         [Fact]
         public async void NegativeCaseSaveMessage()
         {
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () => await _messageService.Save(null));
+            Assert.Equal("Value cannot be null. (Parameter 'textMessage')", ex.Message);
             var result = true;
-
-            try
-            {
-                await _messageService.Save(null);
-            }
-            catch (Exception e)
-            {
-                result = false;
-            }
-            finally
-            {
-                Assert.False(result);
-            }
         }
     }
 }

@@ -5,14 +5,19 @@ using ChatServer.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace ChatServerTest
 {
     public class UserServiceTest
     {
-        private static readonly UserRepository UserRepository = new UserRepository();
-        private readonly UserService _userService = new UserService(UserRepository);
+        private readonly UserService _userService;
+
+        public UserServiceTest()
+        {
+            _userService = new UserService(new UserRepository());
+        }
 
         [Fact]
         public async void PositiveCaseAuthorizationUser()
@@ -38,20 +43,8 @@ namespace ChatServerTest
         [Fact]
         public async void NegativeCaseAuthorizationUser()
         {
-            var result = true;
-
-            try
-            {
-                await _userService.Auth(null);
-            }
-            catch (Exception e)
-            {
-                result = false;
-            }
-            finally
-            {
-                Assert.False(result);
-            }
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () => await _userService.Auth(null));
+            Assert.Equal("Value cannot be null. (Parameter 'message')", ex.Message);
         }
     }
 }
