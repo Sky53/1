@@ -8,6 +8,6 @@ namespace ChatServer.DataAccessLayer.Repositories
 {
     public interface IMessageRepository
     {
-        public Task CreateMessage(BaseMessage message);
+        Task CreateMessage(BaseMessage message);
     }
 }

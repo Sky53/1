@@ -14,56 +14,61 @@ namespace ChatServerTest
 {
     public class UserServiceTest
     {
-        private UserService _userService;
+        private readonly UserService _userService;
+        private readonly Mock<IUserRepository> _userRepositoryMock = new Mock<IUserRepository>();
 
         public UserServiceTest()
         {
-            _userService = new UserService(new UserRepository());
+            _userService = new UserService(_userRepositoryMock.Object);
         }
 
         [Fact]
         public async void PositiveCaseAuthorizationUser()
         {
+            // Arrange
+            var userName = "Test";
+
+            var user = new User
+            {
+                Id = 1,
+                Name = userName,
+                Groups = new List<Group> {new Group {Id = 1}}
+            };
+
             var authMessage = new Message<AuthMessage>
             {
                 Type = (int) MessageType.Authorization,
                 Body = new AuthMessage
                 {
-                    Login = "User1",
+                    Login = userName,
                     Pass = "pass"
                 },
                 GroupId = 1
             };
 
-            var mock = new Mock<IUserRepository>();
-            mock.Setup(m => m.GetUserByNameAndPassword(It.IsAny<Message<AuthMessage>>()))
-                .Returns(Task.FromResult(new User
-                {
-                    Id = 1,
-                    Name = "Test",
-                    Groups = new List<Group> { new Group { Id = 1 } }
-                }));
+            _userRepositoryMock.Setup(m => m.GetUserByNameAndPassword(It.IsAny<Message<AuthMessage>>()))
+                .ReturnsAsync(user);
 
-            mock.Setup(m => m.ChangeUserGroup(It.IsAny<int>(), It.IsAny<int>()))
-                .Returns(Task.FromResult(new Group
+            _userRepositoryMock.Setup(m => m.ChangeUserGroup(It.IsAny<long>(), It.IsAny<long?>()))
+                .ReturnsAsync(new Group
                 {
                     Id = 1,
                     Users = new List<User> { new User { Id = 1, Name = "Test" } }
-                }));
+                });
 
-            var user = mock.Object.GetUserByNameAndPassword(authMessage);
-            var group = mock.Object.ChangeUserGroup(0,0);
-            _userService = new UserService(mock.Object);
+            // Act
             var result = await _userService.Auth(authMessage);
-            Assert.True(result != null);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(result.Name, authMessage.Body.Login);
+            Assert.Equal(result.GroupId, authMessage.GroupId);
         }
 
         [Fact]
         public async void NegativeCaseAuthorizationUser()
         {
-            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () => await _userService.Auth(null));
-
-            Assert.Equal("Value cannot be null. (Parameter 'message')", ex.Message);
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await _userService.Auth(null));
         }
     }
 }
