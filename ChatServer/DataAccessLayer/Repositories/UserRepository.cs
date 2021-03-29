@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace ChatServer.DataAccessLayer.Repositories
 {
-    public class UserRepository
+    public class UserRepository : IUserRepository
     {
         private readonly ChatContext _chatContext = new ChatContext();
 
