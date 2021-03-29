@@ -11,7 +11,7 @@ namespace ChatServerTest
 {
     public class MessageServiceTest
     {
-        private readonly MessageService _messageService;
+        private MessageService _messageService;
 
         public MessageServiceTest()
         {
@@ -36,6 +36,9 @@ namespace ChatServerTest
             var mock = new Mock<IMessageRepository>();
             mock.Setup(m => m.CreateMessage(It.IsAny<BaseMessage>()))
                 .Returns(Task.CompletedTask);
+
+            _messageService = new MessageService(mock.Object);
+
             await Assert.IsAssignableFrom<Task>(_messageService.Save(textMessage));
         }
 

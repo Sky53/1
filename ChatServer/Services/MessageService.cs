@@ -8,9 +8,9 @@ namespace ChatServer.Services
 {
     public class MessageService
     {
-        private readonly MessageRepository _messageRepository;
+        private  IMessageRepository _messageRepository;
 
-        public MessageService(MessageRepository messageRepository)
+        public MessageService(IMessageRepository messageRepository)
         {
             _messageRepository = messageRepository;
         }
