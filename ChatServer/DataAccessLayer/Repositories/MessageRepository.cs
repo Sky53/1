@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace ChatServer.DataAccessLayer.Repositories
 {
-    public class MessageRepository
+    public class MessageRepository : IMessageRepository
     {
         private readonly ChatContext _chatContext  = new ChatContext();
         public async Task CreateMessage(BaseMessage message)
